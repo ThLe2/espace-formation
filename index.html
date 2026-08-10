@@ -15,6 +15,9 @@
   --rail:2px;
 }
 *{box-sizing:border-box}
+/* Doit primer sur toute règle de mise en page : sans cela, un élément
+   porteur de display:grid reste visible malgré l'attribut hidden. */
+[hidden]{display:none !important}
 html,body{margin:0;padding:0}
 body{
   font-family:var(--sans); color:var(--gris); background:var(--fond);
@@ -336,6 +339,8 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
         bouton.textContent = 'Se connecter';
         return;
       }
+      bouton.disabled = false;
+      bouton.textContent = 'Se connecter';
       demarrer();
     });
   });
