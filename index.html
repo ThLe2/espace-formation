@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Espace de formation — TMK Performances</title>
+<style>
+:root{
+  --prune:#8C1E70; --prune-fonce:#5E1349; --prune-clair:#F4E6EE; --rose:#C77BAA;
+  --vert:#283C28; --gris:#3C3C3C; --gris-moyen:#8A7A85; --trame:#E8DCE5;
+  --fond:#FAF6F8; --blanc:#FFFFFF;
+  --ok:#2E6B4F; --alerte:#A32020;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --rail:2px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); color:var(--gris); background:var(--fond);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{color:var(--vert); font-weight:600; letter-spacing:-.02em; margin:0}
+a{color:var(--prune)}
+:focus-visible{outline:3px solid var(--rose); outline-offset:2px; border-radius:3px}
+.eyebrow{
+  font-size:.7rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--prune); margin:0 0 .5rem
+}
+.muted{color:var(--gris-moyen)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Marque ---------- */
+.marque{font-weight:700; letter-spacing:-.03em; font-size:1.15rem; line-height:1}
+.marque .tmk{color:var(--vert)}
+.marque .perf{color:var(--gris-moyen); font-weight:500}
+.marque .swoosh{
+  display:inline-block; width:26px; height:13px; margin-right:.5rem; vertical-align:-2px;
+  border:3px solid var(--prune); border-bottom:none; border-radius:26px 26px 0 0;
+  border-right-color:var(--rose);
+}
+
+/* ---------- Boutons ---------- */
+button{font:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  background:var(--prune); color:#fff; border:1px solid var(--prune);
+  padding:.75rem 1.4rem; border-radius:2px; cursor:pointer; font-weight:600;
+  letter-spacing:.01em; transition:background .15s ease, transform .15s ease;
+}
+.btn:hover:not(:disabled){background:var(--prune-fonce); border-color:var(--prune-fonce)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{background:var(--trame); border-color:var(--trame); color:var(--gris-moyen); cursor:not-allowed}
+.btn-clair{background:transparent; color:var(--prune)}
+.btn-clair:hover:not(:disabled){background:var(--prune-clair); border-color:var(--prune)}
+.btn-lien{background:none;border:none;color:var(--prune);cursor:pointer;padding:0;font-weight:600;text-decoration:underline}
+
+/* ---------- Connexion ---------- */
+.ecran-connexion{min-height:100vh; display:grid; place-items:center; padding:1.5rem}
+.carte-connexion{
+  width:100%; max-width:26rem; background:var(--blanc);
+  border:1px solid var(--trame); border-top:3px solid var(--prune); padding:2.5rem 2rem;
+}
+.carte-connexion .marque{margin-bottom:2rem; display:block}
+.champ{margin-bottom:1.15rem}
+.champ label{display:block; font-size:.82rem; font-weight:600; color:var(--vert); margin-bottom:.35rem}
+.champ input{
+  width:100%; padding:.7rem .8rem; border:1px solid var(--trame); border-radius:2px;
+  font:inherit; color:var(--gris); background:var(--blanc);
+}
+.champ input:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var(--prune-clair)}
+.aide{font-size:.85rem; color:var(--gris-moyen); margin-top:1.5rem; line-height:1.5}
+.message{
+  padding:.7rem .85rem; border-left:3px solid var(--alerte); background:#FCF2F2;
+  color:var(--alerte); font-size:.9rem; margin-bottom:1.15rem;
+}
+.message[hidden]{display:none}
+
+/* ---------- En-tête applicative ---------- */
+.bandeau{
+  background:var(--prune-fonce); color:#fff; padding:.85rem 1.5rem;
+  display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+}
+.bandeau .marque .tmk,.bandeau .marque .perf{color:#fff}
+.bandeau .marque .swoosh{border-color:var(--rose); border-bottom:none; border-right-color:#fff}
+.bandeau .qui{font-size:.86rem; color:#E9D8E3; display:flex; align-items:center; gap:1rem}
+.bandeau button{color:#fff; text-decoration:underline; background:none; border:none; cursor:pointer; font-size:.86rem}
+main{max-width:62rem; margin:0 auto; padding:2.5rem 1.5rem 5rem}
+
+/* ---------- Liste des séances ---------- */
+.salut{font-size:1.6rem; margin-bottom:.25rem}
+.seance-jour{
+  background:var(--blanc); border:1px solid var(--trame); border-left:3px solid var(--prune);
+  padding:1.75rem; margin:1.75rem 0;
+}
+.seance-jour h2{font-size:1.45rem; margin-bottom:.4rem}
+.horaires{font-variant-numeric:tabular-nums; color:var(--gris-moyen); font-size:.9rem}
+.liste-seances{list-style:none; padding:0; margin:1rem 0 0}
+.liste-seances li{
+  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  padding:.85rem 0; border-bottom:1px solid var(--trame);
+}
+.liste-seances .date{font-variant-numeric:tabular-nums; color:var(--gris-moyen); font-size:.9rem; min-width:8rem}
+.vide{
+  background:var(--blanc); border:1px dashed var(--trame); padding:2.5rem 1.75rem; text-align:center;
+}
+
+/* ---------- Barre de la journée ---------- */
+.jour{margin:1.25rem 0 0}
+.jour-piste{position:relative; height:6px; background:var(--trame); border-radius:3px; overflow:hidden}
+.jour-seance{position:absolute; top:0; bottom:0; left:0; background:var(--rose); opacity:.55}
+.jour-marge{position:absolute; top:0; bottom:0; background:repeating-linear-gradient(
+   -45deg,var(--trame),var(--trame) 3px,var(--prune-clair) 3px,var(--prune-clair) 6px)}
+.jour-curseur{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--prune-fonce)}
+.jour-legende{
+  display:flex; justify-content:space-between; font-size:.74rem; color:var(--gris-moyen);
+  font-variant-numeric:tabular-nums; margin-top:.4rem;
+}
+
+/* ---------- La séance : rail + contenu ---------- */
+.seance{display:grid; grid-template-columns:16rem 1fr; gap:2.5rem; align-items:start}
+@media (max-width:820px){.seance{grid-template-columns:1fr; gap:1.5rem}}
+
+.fil{list-style:none; margin:0; padding:0; position:relative}
+.fil::before{
+  content:""; position:absolute; left:11px; top:14px; bottom:14px;
+  width:var(--rail); background:var(--trame);
+}
+.fil-fait{position:absolute; left:11px; top:14px; width:var(--rail); background:var(--prune); transition:height .4s ease}
+.etape{position:relative; padding:0 0 1.4rem 2.5rem; cursor:default}
+.etape:last-child{padding-bottom:0}
+.puce{
+  position:absolute; left:0; top:0; width:24px; height:24px; border-radius:50%;
+  background:var(--blanc); border:var(--rail) solid var(--trame);
+  display:grid; place-items:center; font-size:.7rem; font-weight:700; color:var(--gris-moyen);
+  font-variant-numeric:tabular-nums;
+}
+.etape-titre{font-weight:600; color:var(--vert); font-size:.95rem; line-height:1.35}
+.etape-type{font-size:.74rem; color:var(--gris-moyen); text-transform:uppercase; letter-spacing:.08em}
+
+.etape.faite .puce{background:var(--prune); border-color:var(--prune); color:#fff}
+.etape.faite .etape-titre{color:var(--gris-moyen)}
+.etape.courante .puce{
+  border-color:var(--prune); color:var(--prune); background:var(--prune-clair);
+  box-shadow:0 0 0 5px rgba(140,30,112,.12);
+}
+.etape.courante .etape-titre{color:var(--prune-fonce)}
+.etape.verrouillee .puce{
+  background:repeating-linear-gradient(-45deg,#fff,#fff 3px,var(--trame) 3px,var(--trame) 5px);
+  color:transparent;
+}
+.etape.verrouillee .etape-titre,.etape.verrouillee .etape-type{color:#B9AFB5}
+
+.panneau{background:var(--blanc); border:1px solid var(--trame); padding:2rem}
+.panneau h2{font-size:1.35rem; margin-bottom:.15rem}
+.panneau-tete{border-bottom:1px solid var(--trame); padding-bottom:1.25rem; margin-bottom:1.5rem}
+.actions{margin-top:1.75rem; display:flex; gap:.75rem; flex-wrap:wrap; align-items:center}
+
+/* ---------- Lecteur vidéo ---------- */
+video{width:100%; display:block; background:#000}
+.vu{margin-top:.6rem}
+.vu-piste{position:relative; height:8px; background:var(--trame); border-radius:4px; overflow:hidden}
+.vu-part{position:absolute; top:0; bottom:0; left:0; background:var(--prune); transition:width .3s ease}
+.vu-tete{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--vert)}
+.vu-txt{display:flex; justify-content:space-between; font-size:.78rem; color:var(--gris-moyen); margin-top:.35rem}
+.note{
+  background:var(--prune-clair); border-left:3px solid var(--prune); padding:.75rem .9rem;
+  font-size:.88rem; color:var(--prune-fonce); margin-top:1rem;
+}
+.note[hidden]{display:none}
+
+/* ---------- QCM ---------- */
+.question{border-bottom:1px solid var(--trame); padding:1.5rem 0}
+.question:first-of-type{padding-top:0}
+.question-num{font-size:.72rem; font-weight:700; letter-spacing:.12em; color:var(--rose); text-transform:uppercase}
+.question-enonce{font-weight:600; color:var(--vert); margin:.35rem 0 1rem; font-size:1.02rem}
+.prop{display:flex; gap:.7rem; align-items:flex-start; padding:.5rem .7rem; border-radius:2px; cursor:pointer}
+.prop:hover{background:var(--fond)}
+.prop input{margin:.35rem 0 0; accent-color:var(--prune); flex:none}
+textarea{
+  width:100%; min-height:8rem; padding:.75rem; border:1px solid var(--trame);
+  font:inherit; color:var(--gris); border-radius:2px; resize:vertical;
+}
+textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var(--prune-clair)}
+
+.resultat{border:1px solid var(--trame); border-top:3px solid var(--prune); padding:1.5rem; margin-top:1.5rem}
+.score{font-size:2.4rem; font-weight:300; color:var(--prune-fonce); font-variant-numeric:tabular-nums; line-height:1}
+.corrige{list-style:none; padding:0; margin:1.25rem 0 0}
+.corrige li{padding:.6rem 0 .6rem .9rem; border-left:3px solid var(--trame); margin-bottom:.5rem; font-size:.9rem}
+.corrige li.juste{border-left-color:var(--ok)}
+.corrige li.faux{border-left-color:var(--alerte)}
+
+.chargement{text-align:center; padding:4rem 1rem; color:var(--gris-moyen)}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+</head>
+<body>
+
+<!-- ============ CONNEXION ============ -->
+<section id="vue-connexion" class="ecran-connexion">
+  <form class="carte-connexion" id="form-connexion" autocomplete="on">
+    <span class="marque"><span class="swoosh"></span><span class="tmk">TMK</span> <span class="perf">Performances</span></span>
+    <p class="eyebrow">Espace de formation</p>
+    <h1 style="font-size:1.4rem;margin-bottom:1.75rem">Connexion</h1>
+
+    <div class="message" id="msg-connexion" hidden role="alert"></div>
+
+    <div class="champ">
+      <label for="email">Adresse de connexion</label>
+      <input type="email" id="email" name="email" autocomplete="username" required
+             placeholder="prenom.nom@…">
+    </div>
+    <div class="champ">
+      <label for="mdp">Mot de passe</label>
+      <input type="password" id="mdp" name="password" autocomplete="current-password" required>
+    </div>
+
+    <button class="btn" style="width:100%" type="submit" id="btn-connexion">Se connecter</button>
+
+    <p class="aide">
+      Utilisez l'adresse et le mot de passe qui vous ont été communiqués.
+      Si le mot de passe ne fonctionne pas, contactez votre gestionnaire de formation :
+      il ne peut pas être réinitialisé depuis cette page.
+    </p>
+  </form>
+</section>
+
+<!-- ============ APPLICATION ============ -->
+<div id="app" hidden>
+  <div id="ruban-demo" hidden style="background:#5E1349;color:#F4E6EE;text-align:center;padding:.4rem;font-size:.8rem;letter-spacing:.04em">
+    Aperçu — données fictives, rien n'est enregistré
+  </div>
+  <header class="bandeau">
+    <span class="marque"><span class="swoosh"></span><span class="tmk">TMK</span> <span class="perf">Performances</span></span>
+    <span class="qui"><span id="qui-nom"></span><button type="button" id="btn-deconnexion">Se déconnecter</button></span>
+  </header>
+  <main>
+    <div id="vue-seances"></div>
+    <div id="vue-seance" hidden></div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="demo.js"></script>
+<script src="vendor/supabase.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------ *
+   * Mise en place
+   * ------------------------------------------------------------------ */
+  var APERCU = /[?&]demo\b/.test(location.search);
+  // Deux écritures acceptées dans config.js : l'objet LMS_CONFIG, ou les
+  // constantes SUPABASE_URL / SUPABASE_KEY employées dans les outils existants.
+  var CFG = window.LMS_CONFIG || {};
+  if (!CFG.SUPABASE_URL && typeof SUPABASE_URL !== 'undefined') CFG.SUPABASE_URL = SUPABASE_URL;
+  if (!CFG.SUPABASE_ANON_KEY) {
+    if (typeof SUPABASE_KEY !== 'undefined')      CFG.SUPABASE_ANON_KEY = SUPABASE_KEY;
+    else if (typeof SUPABASE_ANON_KEY !== 'undefined') CFG.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
+  }
+  if (!APERCU && (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY || /xxxx/.test(CFG.SUPABASE_URL))) {
+    document.body.innerHTML =
+      '<div class="chargement"><p><strong>Configuration incomplète.</strong></p>' +
+      '<p>Renseignez l\'adresse du projet et la clé anon dans <code>config.js</code>.</p>' +
+      '<p class="muted">Pour voir l\'interface sans rien configurer, ouvrez cette page avec ' +
+      '<code>?demo</code> à la fin de l\'adresse.</p></div>';
+    return;
+  }
+
+  if (!APERCU && /^sb_secret_|service_role/.test(String(CFG.SUPABASE_ANON_KEY))) {
+    document.body.innerHTML =
+      '<div class="chargement"><p><strong>Clé incorrecte dans config.js.</strong></p>' +
+      '<p>C\'est une clé secrète. Elle contourne toutes les règles d\'accès et ne doit jamais ' +
+      'figurer dans une page publiée. Utilisez la clé <em>publishable</em> ' +
+      '(<code>sb_publishable_…</code>).</p></div>';
+    return;
+  }
+
+  var db = APERCU ? window.LMS_CLIENT_DEMO()
+                  : window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+  var lms = function () { return db.schema('lms'); };
+  var contenu = function () { return db.schema('contenu'); };
+  var evalu = function () { return db.schema('eval'); };
+
+  var $ = function (s) { return document.querySelector(s); };
+  var etat = { stagiaire: null, seances: [], seance: null, etapes: [], progressions: [], courante: null };
+
+  var JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+  var MOIS  = ['janvier','février','mars','avril','mai','juin','juillet','août',
+               'septembre','octobre','novembre','décembre'];
+
+  function echappe(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function dateLongue(iso) {
+    var d = new Date(iso + 'T12:00:00');
+    return JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()];
+  }
+  function hhmm(t) { return String(t || '').slice(0, 5).replace(':', 'h'); }
+  function minutes(t) {
+    var p = String(t || '00:00').split(':');
+    return (+p[0]) * 60 + (+p[1]);
+  }
+  function aujourdhui() {
+    var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
+  }
+  function libelleType(t) {
+    return ({ video:'Capsule vidéo', lecture:'Lecture', document:'Document',
+              exercice:'Exercice', qcm:'Questionnaire', cas_pratique:'Cas pratique' })[t] || t;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Connexion
+   * ------------------------------------------------------------------ */
+  $('#form-connexion').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var bouton = $('#btn-connexion'), msg = $('#msg-connexion');
+    msg.hidden = true;
+    bouton.disabled = true;
+    bouton.textContent = 'Connexion…';
+
+    db.auth.signInWithPassword({
+      email: $('#email').value.trim(),
+      password: $('#mdp').value
+    }).then(function (r) {
+      if (r.error) {
+        msg.textContent = /Invalid login/i.test(r.error.message)
+          ? "Adresse ou mot de passe incorrect. Vérifiez la saisie, puis contactez votre gestionnaire de formation."
+          : "La connexion a échoué : " + r.error.message;
+        msg.hidden = false;
+        bouton.disabled = false;
+        bouton.textContent = 'Se connecter';
+        return;
+      }
+      demarrer();
+    });
+  });
+
+  $('#btn-deconnexion').addEventListener('click', function () {
+    db.auth.signOut().then(function () { location.reload(); });
+  });
+
+  /* ------------------------------------------------------------------ *
+   * Chargement
+   * ------------------------------------------------------------------ */
+  function demarrer() {
+    $('#vue-connexion').hidden = true;
+    $('#app').hidden = false;
+    $('#vue-seances').innerHTML = '<div class="chargement">Chargement de vos séances…</div>';
+
+    lms().from('stagiaires').select('id,prenom,nom').limit(1).then(function (r) {
+      etat.stagiaire = (r.data && r.data[0]) || null;
+      if (!etat.stagiaire) {
+        $('#vue-seances').innerHTML =
+          '<div class="vide"><h2>Compte non rattaché</h2>' +
+          '<p class="muted">Votre connexion fonctionne, mais aucun dossier stagiaire ne lui est associé. ' +
+          'Signalez-le à votre gestionnaire de formation.</p></div>';
+        return;
+      }
+      $('#qui-nom').textContent = etat.stagiaire.prenom + ' ' + etat.stagiaire.nom;
+      chargerSeances();
+    });
+  }
+
+  function chargerSeances() {
+    lms().from('sessions')
+      .select('id,libelle,da_id,date_debut,date_fin,heure_debut,heure_fin,heure_cloture,est_fenetre')
+      .order('date_debut', { ascending: true })
+      .then(function (r) {
+        etat.seances = r.data || [];
+        afficherSeances();
+      });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Vue : mes séances
+   * ------------------------------------------------------------------ */
+  function afficherSeances() {
+    var jour = aujourdhui();
+    var duJour = etat.seances.filter(function (s) { return s.date_debut <= jour && s.date_fin >= jour; });
+    var aVenir = etat.seances.filter(function (s) { return s.date_debut > jour; });
+    var h = '<p class="eyebrow">Votre parcours</p><h1 class="salut">Bonjour ' +
+            echappe(etat.stagiaire.prenom) + '</h1>';
+
+    if (duJour.length) {
+      duJour.forEach(function (s) {
+        h += '<article class="seance-jour">' +
+             '<p class="eyebrow">' + (s.est_fenetre ? 'Ouvert jusqu\'au ' + dateLongue(s.date_fin) : 'Aujourd\'hui') + '</p>' +
+             '<h2>' + echappe(s.libelle) + '</h2>' +
+             '<p class="horaires">' + hhmm(s.heure_debut) + ' – ' + hhmm(s.heure_fin) +
+             '<span class="muted"> · vous pouvez terminer jusqu\'à ' + hhmm(s.heure_cloture) + '</span></p>' +
+             barreJour(s) +
+             '<div class="actions"><button class="btn" data-ouvrir="' + s.id + '">Ouvrir la séance</button></div>' +
+             '</article>';
+      });
+    } else {
+      h += '<div class="vide"><h2>Aucune séance aujourd\'hui</h2>' +
+           '<p class="muted">' + (aVenir.length
+              ? 'La prochaine est le ' + dateLongue(aVenir[0].date_debut) + '.'
+              : 'Aucune séance n\'est programmée pour le moment.') + '</p></div>';
+    }
+
+    if (aVenir.length) {
+      h += '<h2 style="font-size:1.05rem;margin-top:2.5rem">À venir</h2><ul class="liste-seances">';
+      aVenir.forEach(function (s) {
+        h += '<li><span class="date">' + dateLongue(s.date_debut) + '</span>' +
+             '<span style="flex:1">' + echappe(s.libelle) + '</span>' +
+             '<span class="horaires">' + hhmm(s.heure_debut) + '</span></li>';
+      });
+      h += '</ul>';
+    }
+
+    $('#vue-seances').innerHTML = h;
+    $('#vue-seances').hidden = false;
+    $('#vue-seance').hidden = true;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ouvrir]'), function (b) {
+      b.addEventListener('click', function () { ouvrirSeance(+b.dataset.ouvrir); });
+    });
+  }
+
+  // La journée est uniforme : 08h30–16h30, deux heures de marge jusqu'à 18h30.
+  function barreJour(s) {
+    if (s.est_fenetre) return '';
+    var d = minutes(s.heure_debut), f = minutes(s.heure_fin), c = minutes(s.heure_cloture);
+    var total = c - d;
+    if (total <= 0) return '';
+    var now = new Date();
+    var m = now.getHours() * 60 + now.getMinutes();
+    var pos = Math.max(0, Math.min(100, ((m - d) / total) * 100));
+    var seance = ((f - d) / total) * 100;
+    return '<div class="jour"><div class="jour-piste">' +
+           '<div class="jour-seance" style="width:' + seance.toFixed(1) + '%"></div>' +
+           '<div class="jour-marge" style="left:' + seance.toFixed(1) + '%;right:0"></div>' +
+           (m >= d && m <= c ? '<div class="jour-curseur" style="left:' + pos.toFixed(1) + '%"></div>' : '') +
+           '</div><div class="jour-legende"><span>' + hhmm(s.heure_debut) + '</span>' +
+           '<span>fin de séance ' + hhmm(s.heure_fin) + '</span>' +
+           '<span>' + hhmm(s.heure_cloture) + '</span></div></div>';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Vue : la séance
+   * ------------------------------------------------------------------ */
+  function ouvrirSeance(id) {
+    etat.seance = etat.seances.filter(function (s) { return s.id === id; })[0];
+    $('#vue-seances').hidden = true;
+    $('#vue-seance').hidden = false;
+    $('#vue-seance').innerHTML = '<div class="chargement">Ouverture de la séance…</div>';
+
+    // La connexion vaut constat de présence : aucun code à saisir.
+    lms().rpc('enregistrer_connexion', { p_session_id: id }).then(function (r) {
+      if (r.error) {
+        $('#vue-seance').innerHTML =
+          '<div class="vide"><h2>Séance indisponible</h2><p class="muted">' +
+          echappe(r.error.message) + '</p>' +
+          '<div class="actions" style="justify-content:center"><button class="btn btn-clair" id="retour">Revenir à mes séances</button></div></div>';
+        $('#retour').addEventListener('click', afficherSeances);
+        return;
+      }
+      rafraichirSeance(true);
+    });
+  }
+
+  function rafraichirSeance(premier) {
+    Promise.all([
+      contenu().from('etapes')
+        .select('id,ref,ordre,type,titre,bloquante,regle,media_url,duree_s')
+        .eq('da_id', etat.seance.da_id).order('ordre', { ascending: true }),
+      lms().from('progressions')
+        .select('etape_id,statut,segments,duree_vue_s')
+        .eq('session_id', etat.seance.id)
+    ]).then(function (rs) {
+      etat.etapes = rs[0].data || [];
+      etat.progressions = rs[1].data || [];
+      if (premier) etat.courante = premiereOuverte();
+      dessinerSeance();
+    });
+  }
+
+  function progressionDe(etapeId) {
+    return etat.progressions.filter(function (p) { return p.etape_id === etapeId; })[0] || null;
+  }
+  function estValidee(etapeId) {
+    var p = progressionDe(etapeId);
+    return !!(p && p.statut === 'validee');
+  }
+  // Une étape s'ouvre quand toutes les étapes bloquantes qui la précèdent sont validées.
+  // Le serveur applique la même règle : ceci n'est qu'un affichage honnête.
+  function estOuverte(etape) {
+    for (var i = 0; i < etat.etapes.length; i++) {
+      var e = etat.etapes[i];
+      if (e.ordre >= etape.ordre) break;
+      if (e.bloquante && !estValidee(e.id)) return false;
+    }
+    return true;
+  }
+  function premiereOuverte() {
+    for (var i = 0; i < etat.etapes.length; i++) {
+      if (!estValidee(etat.etapes[i].id) && estOuverte(etat.etapes[i])) return etat.etapes[i];
+    }
+    return etat.etapes[etat.etapes.length - 1] || null;
+  }
+
+  function dessinerSeance() {
+    var faites = etat.etapes.filter(function (e) { return estValidee(e.id); }).length;
+    var total = etat.etapes.length;
+    var h = '<button class="btn-lien" id="retour" style="margin-bottom:1.25rem">← Mes séances</button>' +
+            '<p class="eyebrow">' + dateLongue(etat.seance.date_debut) + '</p>' +
+            '<h1 style="font-size:1.7rem;margin-bottom:.35rem">' + echappe(etat.seance.libelle) + '</h1>' +
+            '<p class="horaires" style="margin:0 0 2rem">' + faites + ' étape' + (faites > 1 ? 's' : '') +
+            ' validée' + (faites > 1 ? 's' : '') + ' sur ' + total + '</p>' +
+            '<div class="seance"><ul class="fil" id="fil">';
+
+    var hauteurFaite = 0, indexDernierFait = -1;
+    etat.etapes.forEach(function (e, i) {
+      if (estValidee(e.id)) indexDernierFait = i;
+    });
+    hauteurFaite = indexDernierFait < 0 ? 0 : (indexDernierFait / Math.max(1, total - 1)) * 100;
+
+    h += '<div class="fil-fait" style="height:calc(' + hauteurFaite.toFixed(1) + '% - 0px)"></div>';
+
+    etat.etapes.forEach(function (e, i) {
+      var classe = estValidee(e.id) ? 'faite' : (estOuverte(e) ? '' : 'verrouillee');
+      if (etat.courante && e.id === etat.courante.id && classe !== 'faite') classe = 'courante';
+      var cliquable = estOuverte(e);
+      h += '<li class="etape ' + classe + '"' + (cliquable ? ' data-etape="' + e.id + '" style="cursor:pointer"' : '') +
+           ' role="listitem">' +
+           '<span class="puce" aria-hidden="true">' + (estValidee(e.id) ? '✓' : (i + 1)) + '</span>' +
+           '<span class="etape-type">' + libelleType(e.type) + '</span>' +
+           '<div class="etape-titre">' + echappe(e.titre) + '</div>' +
+           (cliquable ? '' : '<span class="sr">Étape verrouillée</span>') +
+           '</li>';
+    });
+
+    h += '</ul><div class="panneau" id="panneau"></div></div>';
+    $('#vue-seance').innerHTML = h;
+    $('#retour').addEventListener('click', afficherSeances);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-etape]'), function (li) {
+      li.addEventListener('click', function () {
+        etat.courante = etat.etapes.filter(function (e) { return e.id === +li.dataset.etape; })[0];
+        dessinerSeance();
+      });
+    });
+    dessinerPanneau();
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Panneau de l'étape courante
+   * ------------------------------------------------------------------ */
+  function dessinerPanneau() {
+    var p = $('#panneau'), e = etat.courante;
+    if (!e) { p.innerHTML = '<p class="muted">Cette séance ne contient aucune étape.</p>'; return; }
+
+    var tete = '<div class="panneau-tete"><p class="eyebrow">' + libelleType(e.type) + '</p>' +
+               '<h2>' + echappe(e.titre) + '</h2></div>';
+
+    if (!estOuverte(e)) {
+      p.innerHTML = tete + '<p class="muted">Terminez d\'abord l\'étape précédente pour ouvrir celle-ci.</p>';
+      return;
+    }
+    if (e.type === 'video')      return void panneauVideo(p, tete, e);
+    if (e.type === 'qcm')        return void panneauQcm(p, tete, e);
+    if (e.type === 'cas_pratique') return void panneauCas(p, tete, e);
+    panneauSimple(p, tete, e);
+  }
+
+  function boutonSuivant() {
+    var i = etat.etapes.indexOf(etat.courante);
+    if (i < 0 || i + 1 >= etat.etapes.length) return '';
+    return '<button class="btn" id="suivant">Étape suivante</button>';
+  }
+  function brancherSuivant() {
+    var b = $('#suivant');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var i = etat.etapes.indexOf(etat.courante);
+      etat.courante = etat.etapes[i + 1];
+      dessinerSeance();
+    });
+  }
+
+  /* --- Lecture, document, exercice --- */
+  function panneauSimple(p, tete, e) {
+    var fait = estValidee(e.id);
+    var corps = e.media_url
+      ? '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener">Ouvrir le document</a></p>'
+      : '<p class="muted">Prenez connaissance du contenu, puis validez cette étape.</p>';
+    p.innerHTML = tete + corps + '<div class="actions">' +
+      (fait ? '<span class="muted">✓ Étape validée</span> ' + boutonSuivant()
+            : '<button class="btn" id="valider">J\'ai terminé cette étape</button>') +
+      '</div>';
+    brancherSuivant();
+    var b = $('#valider');
+    if (b) b.addEventListener('click', function () {
+      b.disabled = true;
+      lms().rpc('valider_etape', { p_session_id: etat.seance.id, p_etape_id: e.id })
+        .then(function (r) {
+          if (r.error) { alerte(p, r.error.message); b.disabled = false; return; }
+          rafraichirSeance(false);
+        });
+    });
+  }
+
+  /* --- Capsule vidéo : le blocage de l'avance rapide vit ici et au serveur --- */
+  function panneauVideo(p, tete, e) {
+    var regle = e.regle || {};
+    var tol = +(regle.tolerance_saut_s || 5);
+    var seuil = +(regle.couverture_min || 0.95);
+    var prog = progressionDe(e.id);
+    var segments = (prog && prog.segments) || [];
+    var duree = e.duree_s || 0;
+
+    p.innerHTML = tete +
+      '<video id="capsule" controls preload="metadata" playsinline src="' + echappe(e.media_url || '') + '"></video>' +
+      '<div class="vu"><div class="vu-piste"><div class="vu-part" id="vu-part"></div>' +
+      '<div class="vu-tete" id="vu-tete"></div></div>' +
+      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : ' +
+      Math.round(seuil * 100) + ' %</span></div></div>' +
+      '<div class="note" id="note-video" hidden></div>' +
+      '<div class="actions" id="actions-video"></div>';
+
+    var video = $('#capsule');
+    var frontiere = calculerFrontiere(segments, tol);
+    var couvert = couverture(segments);
+
+    majBarre();
+    majActions();
+
+    function majBarre() {
+      var pc = duree ? Math.min(100, (couvert / duree) * 100) : 0;
+      $('#vu-part').style.width = pc.toFixed(1) + '%';
+      $('#vu-txt').textContent = 'Vu : ' + Math.round(pc) + ' %';
+      if (duree && video.duration) {
+        $('#vu-tete').style.left = ((video.currentTime / duree) * 100).toFixed(1) + '%';
+      }
+    }
+    function majActions() {
+      var ok = estValidee(e.id);
+      $('#actions-video').innerHTML = ok
+        ? '<span class="muted">✓ Capsule vue en entier</span> ' + boutonSuivant()
+        : '<span class="muted">L\'étape se valide seule dès que la capsule a été vue.</span>';
+      brancherSuivant();
+    }
+    function dire(t) {
+      var n = $('#note-video');
+      n.textContent = t; n.hidden = !t;
+    }
+
+    // Reprise là où le visionnage continu s'est arrêté.
+    video.addEventListener('loadedmetadata', function () {
+      if (frontiere > 1 && frontiere < video.duration - 1) {
+        video.currentTime = frontiere;
+        dire('Reprise à ' + Math.floor(frontiere / 60) + ' min ' + Math.floor(frontiere % 60) + ' s.');
+      }
+      majBarre();
+    });
+
+    // Toute avance au-delà de ce qui a été réellement vu est ramenée en arrière.
+    video.addEventListener('seeking', function () {
+      if (video.currentTime > frontiere + tol) {
+        video.currentTime = frontiere;
+        dire('Cette capsule ne peut pas être avancée : elle doit être visionnée en entier.');
+      }
+    });
+
+    var debutBloc = null, dernier = 0, minuteur = null;
+
+    video.addEventListener('play', function () {
+      debutBloc = Math.floor(video.currentTime);
+      dernier = video.currentTime;
+      minuteur = setInterval(envoyer, 10000);
+    });
+    video.addEventListener('timeupdate', function () {
+      if (Math.abs(video.currentTime - dernier) < 2) dernier = video.currentTime;
+      majBarre();
+    });
+    ['pause', 'ended'].forEach(function (ev) {
+      video.addEventListener(ev, function () { clearInterval(minuteur); envoyer(); });
+    });
+    window.addEventListener('beforeunload', envoyer);
+
+    function envoyer() {
+      if (debutBloc === null) return;
+      var fin = Math.floor(dernier);
+      if (fin - debutBloc < 2) return;
+      var d = debutBloc;
+      debutBloc = fin;
+      lms().rpc('enregistrer_visionnage', {
+        p_session_id: etat.seance.id, p_etape_id: e.id, p_debut_s: d, p_fin_s: fin
+      }).then(function (r) {
+        if (r.error) { dire(r.error.message); return; }
+        var res = r.data || {};
+        couvert = res.duree_vue_s || couvert;
+        frontiere = Math.max(frontiere, fin);
+        majBarre();
+        if (res.validee && !estValidee(e.id)) {
+          dire('Capsule vue en entier. Étape validée.');
+          rafraichirSeance(false);
+        }
+      });
+    }
+  }
+
+  function calculerFrontiere(segments, tol) {
+    var f = 0;
+    (segments || []).slice().sort(function (a, b) { return a[0] - b[0]; })
+      .forEach(function (s) { if (s[0] <= f + tol) f = Math.max(f, s[1]); });
+    return f;
+  }
+  function couverture(segments) {
+    return (segments || []).reduce(function (t, s) { return t + (s[1] - s[0]); }, 0);
+  }
+
+  /* --- Questionnaire --- */
+  function panneauQcm(p, tete, e) {
+    if (estValidee(e.id)) {
+      evalu().from('tentatives').select('score_auto,bareme_total,soumise_le')
+        .eq('session_id', etat.seance.id).eq('etape_id', e.id).limit(1)
+        .then(function (r) {
+          var t = (r.data && r.data[0]) || {};
+          p.innerHTML = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
+            '<p class="score">' + (t.score_auto != null ? (+t.score_auto).toFixed(2).replace(/\.00$/, '') : '—') +
+            ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
+            (t.bareme_total != null ? (+t.bareme_total).toFixed(2).replace(/\.00$/, '') : '—') + '</span></p></div>' +
+            '<div class="actions">' + boutonSuivant() + '</div>';
+          brancherSuivant();
+        });
+      return;
+    }
+
+    p.innerHTML = tete + '<div class="chargement">Chargement du questionnaire…</div>';
+    var ouvertA = new Date().toISOString();
+
+    contenu().from('questions').select('id,ref,ordre,type,enonce,propositions,points')
+      .eq('etape_id', e.id).order('ordre', { ascending: true })
+      .then(function (r) {
+        var qs = r.data || [];
+        if (!qs.length) { p.innerHTML = tete + '<p class="muted">Aucune question dans cette étape.</p>'; return; }
+
+        var h = tete + '<form id="form-qcm">';
+        qs.forEach(function (q, i) {
+          h += '<div class="question"><span class="question-num">Question ' + (i + 1) +
+               ' · ' + q.points + ' point' + (q.points > 1 ? 's' : '') + '</span>' +
+               '<p class="question-enonce">' + echappe(q.enonce) + '</p>';
+          if (q.type === 'ouverte') {
+            h += '<textarea name="' + echappe(q.ref) + '" placeholder="Votre réponse"></textarea>';
+          } else {
+            var type = q.type === 'multiple' ? 'checkbox' : 'radio';
+            (q.propositions || []).forEach(function (o) {
+              h += '<label class="prop"><input type="' + type + '" name="' + echappe(q.ref) +
+                   '" value="' + echappe(o.cle) + '"><span>' + echappe(o.texte) + '</span></label>';
+            });
+            if (q.type === 'multiple') h += '<p class="muted" style="font-size:.82rem;margin:.4rem 0 0">Plusieurs réponses possibles.</p>';
+          }
+          h += '</div>';
+        });
+        h += '<div class="actions"><button class="btn" type="submit" id="envoyer">Envoyer mes réponses</button>' +
+             '<span class="muted" style="font-size:.85rem">Une seule tentative est possible.</span></div></form>';
+        p.innerHTML = h;
+
+        $('#form-qcm').addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var b = $('#envoyer');
+          b.disabled = true; b.textContent = 'Envoi…';
+          var reponses = {};
+          qs.forEach(function (q) {
+            if (q.type === 'ouverte') {
+              var ta = document.querySelector('[name="' + q.ref + '"]');
+              reponses[q.ref] = ta ? ta.value : '';
+            } else {
+              reponses[q.ref] = Array.prototype.map.call(
+                document.querySelectorAll('[name="' + q.ref + '"]:checked'),
+                function (i) { return i.value; });
+            }
+          });
+          evalu().rpc('soumettre', {
+            p_session_id: etat.seance.id, p_etape_id: e.id,
+            p_reponses: reponses, p_commencee_le: ouvertA
+          }).then(function (rr) {
+            if (rr.error) {
+              alerte(p, rr.error.message);
+              b.disabled = false; b.textContent = 'Envoyer mes réponses';
+              return;
+            }
+            afficherResultat(p, tete, rr.data, qs);
+            rafraichirSeance(false);
+          });
+        });
+      });
+  }
+
+  function afficherResultat(p, tete, res, qs) {
+    var enonces = {};
+    qs.forEach(function (q) { enonces[q.ref] = q.enonce; });
+    var h = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
+            '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
+            res.bareme + '</span></p>';
+    if (res.detail && res.detail.length) {
+      h += '<ul class="corrige">';
+      res.detail.forEach(function (d) {
+        var c = d.juste === true ? 'juste' : (d.juste === false ? 'faux' : '');
+        h += '<li class="' + c + '"><strong>' + echappe(enonces[d.ref] || d.ref) + '</strong>' +
+             (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte' : ' — à corriger par le formateur') +
+             (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
+      });
+      h += '</ul>';
+    }
+    h += '</div><div class="actions">' + boutonSuivant() + '</div>';
+    p.innerHTML = h;
+    brancherSuivant();
+  }
+
+  /* --- Cas pratique --- */
+  function panneauCas(p, tete, e) {
+    if (estValidee(e.id)) {
+      p.innerHTML = tete + '<p class="muted">Votre travail a été transmis au formateur. ' +
+        'Il sera corrigé et commenté.</p><div class="actions">' + boutonSuivant() + '</div>';
+      brancherSuivant();
+      return;
+    }
+    var ouvertA = new Date().toISOString();
+    p.innerHTML = tete +
+      '<p class="muted">Rédigez votre réponse. Elle sera lue et commentée par votre formateur.</p>' +
+      '<textarea id="cas" style="min-height:16rem" placeholder="Votre réponse"></textarea>' +
+      '<div class="actions"><button class="btn" id="envoyer-cas">Envoyer mon travail</button>' +
+      '<span class="muted" style="font-size:.85rem">Un seul envoi est possible.</span></div>';
+    $('#envoyer-cas').addEventListener('click', function () {
+      var b = $('#envoyer-cas'), txt = $('#cas').value.trim();
+      if (!txt) { alerte(p, 'Votre réponse est vide.'); return; }
+      b.disabled = true; b.textContent = 'Envoi…';
+      evalu().rpc('soumettre', {
+        p_session_id: etat.seance.id, p_etape_id: e.id,
+        p_reponses: {}, p_commencee_le: ouvertA, p_texte_libre: txt
+      }).then(function (r) {
+        if (r.error) { alerte(p, r.error.message); b.disabled = false; b.textContent = 'Envoyer mon travail'; return; }
+        rafraichirSeance(false);
+      });
+    });
+  }
+
+  function alerte(p, texte) {
+    var d = document.createElement('div');
+    d.className = 'message';
+    d.textContent = texte;
+    p.insertBefore(d, p.firstChild.nextSibling);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Session déjà ouverte ?
+   * ------------------------------------------------------------------ */
+  if (APERCU) document.getElementById('ruban-demo').hidden = false;
+  db.auth.getSession().then(function (r) {
+    if (r.data && r.data.session) demarrer();
+  });
+})();
+</script>
+</body>
+</html>
