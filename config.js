@@ -11,5 +11,5 @@
    NE JAMAIS mettre ici une clé sb_secret_ (ex-service_role) :
    elle contourne toutes les règles d'accès.
    --------------------------------------------------------------- */
-const SUPABASE_URL = ''https://ibkvyjlglwufxvzxnysa.supabase.co'';
+const SUPABASE_URL = 'https://ibkvyjlglwufxvzxnysa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xUfZHSOHf4TnBRRyzU_qJA_TcXIMSKX';
