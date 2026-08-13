@@ -300,7 +300,11 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   }
   function dateLongue(iso) {
     var d = new Date(iso + 'T12:00:00');
-    return JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()];
+    var s = JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()];
+    /* L'annee n'est affichee que si elle differe de l'annee en cours :
+       sans elle, une seance a cheval sur deux annees se lit de travers. */
+    if (d.getFullYear() !== new Date().getFullYear()) s += ' ' + d.getFullYear();
+    return s;
   }
   function hhmm(t) { return String(t || '').slice(0, 5).replace(':', 'h'); }
   function minutes(t) {
@@ -471,9 +475,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
 
   function rafraichirSeance(premier) {
     Promise.all([
-      contenu().from('etapes')
-        .select('id,ref,ordre,type,titre,bloquante,regle,media_url,duree_s')
-        .eq('da_id', etat.seance.da_id).order('ordre', { ascending: true }),
+      lms().rpc('etapes_de_la_seance', { p_session_id: etat.seance.id }),
       lms().from('progressions')
         .select('etape_id,statut,segments,duree_vue_s')
         .eq('session_id', etat.seance.id)
