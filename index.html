@@ -603,7 +603,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     var b = $('#valider');
     if (b) b.addEventListener('click', function () {
       b.disabled = true;
-      lms().rpc('valider_etape', { p_session_id: etat.seance.id, p_etape_id: e.id })
+      lms().rpc('valider_etape_ref', { p_session_id: etat.seance.id, p_etape_ref: e.ref })
         .then(function (r) {
           if (r.error) { alerte(p, r.error.message); b.disabled = false; return; }
           rafraichirSeance(false);
@@ -621,15 +621,25 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     var duree = e.duree_s || 0;
 
     p.innerHTML = tete +
-      '<video id="capsule" controls preload="metadata" playsinline src="' + echappe(e.media_url || '') + '"></video>' +
+      '<video id="capsule" controls preload="metadata" playsinline controlsList="nodownload" ' +
+      'src="' + echappe(e.media_url || '') + '"></video>' +
+      '<div class="actions" style="margin:.6rem 0 0"><label class="muted" style="font-size:.85rem">Vitesse ' +
+      '<select id="vitesse" style="margin-left:.4rem">' +
+      '<option value="0.75">0,75×</option><option value="0.9" selected>0,9×</option>' +
+      '<option value="1">1×</option><option value="1.25">1,25×</option>' +
+      '<option value="1.5">1,5×</option></select></label></div>' +
       '<div class="vu"><div class="vu-piste"><div class="vu-part" id="vu-part"></div>' +
       '<div class="vu-tete" id="vu-tete"></div></div>' +
-      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : ' +
-      Math.round(seuil * 100) + ' %</span></div></div>' +
+      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : 90 %</span></div></div>' +
       '<div class="note" id="note-video" hidden></div>' +
       '<div class="actions" id="actions-video"></div>';
 
     var video = $('#capsule');
+    var selVitesse = $('#vitesse');
+    function appliquerVitesse() { video.playbackRate = parseFloat(selVitesse.value); }
+    selVitesse.addEventListener('change', appliquerVitesse);
+    video.addEventListener('loadedmetadata', appliquerVitesse);
+    video.addEventListener('play', appliquerVitesse);
     var frontiere = calculerFrontiere(segments, tol);
     var couvert = couverture(segments);
 
@@ -674,6 +684,21 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     });
 
     var debutBloc = null, dernier = 0, minuteur = null;
+    /* Intervalles deja connus, repris de la progression enregistree. */
+    var vus = (segments || []).map(function (x) { return [+x[0], +x[1]]; });
+
+    /* Regroupe les intervalles qui se touchent, pour ne pas envoyer
+       une liste qui enfle a chaque relance de la lecture. */
+    function fusionner(liste) {
+      var t = liste.slice().sort(function (a, b) { return a[0] - b[0]; });
+      var out = [];
+      t.forEach(function (x) {
+        var last = out[out.length - 1];
+        if (last && x[0] <= last[1]) last[1] = Math.max(last[1], x[1]);
+        else out.push([x[0], x[1]]);
+      });
+      return out;
+    }
 
     video.addEventListener('play', function () {
       debutBloc = Math.floor(video.currentTime);
@@ -695,15 +720,19 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       if (fin - debutBloc < 2) return;
       var d = debutBloc;
       debutBloc = fin;
+      /* On envoie la liste complete des intervalles vus : c'est le
+         serveur qui recalcule la couverture, jamais le navigateur. */
+      vus.push([d, fin]);
       lms().rpc('enregistrer_visionnage', {
-        p_session_id: etat.seance.id, p_etape_id: e.id, p_debut_s: d, p_fin_s: fin
+        p_session_id: etat.seance.id, p_etape_ref: e.ref, p_segments: fusionner(vus)
       }).then(function (r) {
         if (r.error) { dire(r.error.message); return; }
-        var res = r.data || {};
-        couvert = res.duree_vue_s || couvert;
+        var res = premiereLigne(r.data);
+        if (res.statut === 'refuse') { dire(res.message || 'Visionnage refuse.'); return; }
+        couvert = duree * (Number(res.couverture_pct) || 0) / 100;
         frontiere = Math.max(frontiere, fin);
         majBarre();
-        if (res.validee && !estValidee(e.id)) {
+        if (res.statut === 'validee' && !estValidee(e.id)) {
           dire('Capsule vue en entier. Étape validée.');
           rafraichirSeance(false);
         }
@@ -754,11 +783,18 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
                '<p class="question-enonce">' + echappe(q.enonce) + '</p>';
           if (q.type === 'ouverte') {
             h += '<textarea name="' + echappe(q.ref) + '" placeholder="Votre réponse"></textarea>';
+          } else if (q.type === 'numerique') {
+            h += '<input type="text" inputmode="decimal" name="' + echappe(q.ref) +
+                 '" placeholder="Montant, sans le symbole €" style="max-width:16rem">';
           } else {
             var type = q.type === 'multiple' ? 'checkbox' : 'radio';
-            (q.propositions || []).forEach(function (o) {
+            (q.propositions || []).forEach(function (o, j) {
+              /* Deux formes coexistent : une simple chaine (rang = valeur)
+                 ou un objet {cle, texte} du premier modele. */
+              var val = (o && typeof o === 'object') ? o.cle : j;
+              var txt = (o && typeof o === 'object') ? o.texte : o;
               h += '<label class="prop"><input type="' + type + '" name="' + echappe(q.ref) +
-                   '" value="' + echappe(o.cle) + '"><span>' + echappe(o.texte) + '</span></label>';
+                   '" value="' + echappe(String(val)) + '"><span>' + echappe(String(txt)) + '</span></label>';
             });
             if (q.type === 'multiple') h += '<p class="muted" style="font-size:.82rem;margin:.4rem 0 0">Plusieurs réponses possibles.</p>';
           }
@@ -774,42 +810,58 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
           b.disabled = true; b.textContent = 'Envoi…';
           var reponses = {};
           qs.forEach(function (q) {
+            var el;
             if (q.type === 'ouverte') {
-              var ta = document.querySelector('[name="' + q.ref + '"]');
-              reponses[q.ref] = ta ? ta.value : '';
+              el = document.querySelector('textarea[name="' + q.ref + '"]');
+              reponses[q.ref] = { texte: el ? el.value : '' };
+            } else if (q.type === 'numerique') {
+              el = document.querySelector('input[name="' + q.ref + '"]');
+              var brut = (el ? el.value : '').replace(',', '.').replace(/\s/g, '');
+              reponses[q.ref] = { valeur: brut };
             } else {
-              reponses[q.ref] = Array.prototype.map.call(
+              var choix = Array.prototype.map.call(
                 document.querySelectorAll('[name="' + q.ref + '"]:checked'),
-                function (i) { return i.value; });
+                function (i) { return Number(i.value); });
+              reponses[q.ref] = (q.type === 'multiple')
+                ? { index: choix }
+                : (choix.length ? { index: choix[0] } : {});
             }
           });
           evalu().rpc('soumettre', {
-            p_session_id: etat.seance.id, p_etape_id: e.id,
-            p_reponses: reponses, p_commencee_le: ouvertA
+            p_session_id: etat.seance.id, p_etape_ref: e.ref,
+            p_reponses: reponses
           }).then(function (rr) {
             if (rr.error) {
               alerte(p, rr.error.message);
               b.disabled = false; b.textContent = 'Envoyer mes réponses';
               return;
             }
-            afficherResultat(p, tete, rr.data, qs);
+            afficherResultat(p, tete, premiereLigne(rr.data), qs);
             rafraichirSeance(false);
           });
         });
       });
   }
 
+  /* Les fonctions qui renvoient une table arrivent sous forme de liste. */
+  function premiereLigne(d) { return (d && d.length !== undefined) ? (d[0] || {}) : (d || {}); }
+
   function afficherResultat(p, tete, res, qs) {
     var enonces = {};
     qs.forEach(function (q) { enonces[q.ref] = q.enonce; });
     var h = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
             '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
-            res.bareme + '</span></p>';
+            res.bareme + '</span></p>' +
+            (res.seuil != null
+              ? '<p class="muted">' + res.pourcentage + ' % — seuil de reussite : ' + res.seuil + ' %' +
+                (res.reussi === true ? ' · acquis' : res.reussi === false ? ' · non acquis' : '') + '</p>'
+              : '');
     if (res.detail && res.detail.length) {
       h += '<ul class="corrige">';
       res.detail.forEach(function (d) {
+        var ref = d.question || d.ref;
         var c = d.juste === true ? 'juste' : (d.juste === false ? 'faux' : '');
-        h += '<li class="' + c + '"><strong>' + echappe(enonces[d.ref] || d.ref) + '</strong>' +
+        h += '<li class="' + c + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
              (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte' : ' — à corriger par le formateur') +
              (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
       });
@@ -839,8 +891,8 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       if (!txt) { alerte(p, 'Votre réponse est vide.'); return; }
       b.disabled = true; b.textContent = 'Envoi…';
       evalu().rpc('soumettre', {
-        p_session_id: etat.seance.id, p_etape_id: e.id,
-        p_reponses: {}, p_commencee_le: ouvertA, p_texte_libre: txt
+        p_session_id: etat.seance.id, p_etape_ref: e.ref,
+        p_reponses: {}, p_texte_libre: txt
       }).then(function (r) {
         if (r.error) { alerte(p, r.error.message); b.disabled = false; b.textContent = 'Envoyer mon travail'; return; }
         rafraichirSeance(false);
