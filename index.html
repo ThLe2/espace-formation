@@ -852,16 +852,23 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* --- Questionnaire --- */
   function panneauQcm(p, tete, e) {
     if (estValidee(e.id)) {
-      evalu().from('tentatives').select('score_auto,bareme_total,soumise_le')
-        .eq('session_id', etat.seance.id).eq('etape_id', e.id).limit(1)
+      /* La table des tentatives n'est pas lisible par un stagiaire :
+         c'est la fonction dediee qui lui rend sa copie corrigee. */
+      evalu().rpc('mon_resultat', { p_session_id: etat.seance.id, p_etape_ref: e.ref })
         .then(function (r) {
-          var t = (r.data && r.data[0]) || {};
-          p.innerHTML = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
-            '<p class="score">' + (t.score_auto != null ? (+t.score_auto).toFixed(2).replace(/\.00$/, '') : '—') +
-            ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
-            (t.bareme_total != null ? (+t.bareme_total).toFixed(2).replace(/\.00$/, '') : '—') + '</span></p></div>' +
-            '<div class="actions">' + boutonSuivant() + '</div>';
-          brancherSuivant();
+          if (r.error) { alerte(p, r.error.message); return; }
+          var t = premiereLigne(r.data);
+          if (t.score == null) {
+            p.innerHTML = tete + '<p class="muted">Cette étape est validée.</p>' +
+              '<div class="actions">' + boutonSuivant() + '</div>';
+            brancherSuivant();
+            return;
+          }
+          afficherResultat(p, tete, {
+            score: t.score, bareme: t.bareme, pourcentage: t.pourcentage,
+            seuil: e.seuil_pct, reussi: (e.seuil_pct == null ? null : t.pourcentage >= e.seuil_pct),
+            detail: t.detail
+          }, []);
         });
       return;
     }
