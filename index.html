@@ -384,17 +384,31 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     $('#app').hidden = false;
     $('#vue-seances').innerHTML = '<div class="chargement">Chargement de vos séances…</div>';
 
-    lms().from('stagiaires').select('id,prenom,nom').limit(1).then(function (r) {
-      etat.stagiaire = (r.data && r.data[0]) || null;
-      if (!etat.stagiaire) {
-        $('#vue-seances').innerHTML =
-          '<div class="vide"><h2>Compte non rattaché</h2>' +
-          '<p class="muted">Votre connexion fonctionne, mais aucun dossier stagiaire ne lui est associé. ' +
-          'Signalez-le à votre gestionnaire de formation.</p></div>';
-        return;
-      }
-      $('#qui-nom').textContent = etat.stagiaire.prenom + ' ' + etat.stagiaire.nom;
-      chargerSeances();
+    /* On demande SA fiche, pas une fiche. Un membre du personnel voit
+       toutes les fiches : sans ce filtre, le portail affichait la
+       premiere venue et lui presentait le dossier d'un stagiaire. */
+    db.auth.getUser().then(function (u) {
+      var moi = u && u.data && u.data.user;
+      if (!moi) { seDeconnecter(); return; }
+
+      return lms().from('stagiaires')
+        .select('id,prenom,nom')
+        .eq('user_id', moi.id)
+        .limit(1)
+        .then(function (r) {
+          etat.stagiaire = (r.data && r.data[0]) || null;
+          if (!etat.stagiaire) {
+            $('#vue-seances').innerHTML =
+              '<div class="vide"><h2>Compte non rattaché</h2>' +
+              '<p class="muted">Votre connexion fonctionne, mais aucun dossier stagiaire ne lui est associé. ' +
+              'Si vous faites partie de l\'équipe TMK, cet espace est réservé aux stagiaires. ' +
+              'Sinon, signalez-le à votre gestionnaire de formation.</p></div>';
+            $('#qui-nom').textContent = moi.email || '';
+            return;
+          }
+          $('#qui-nom').textContent = etat.stagiaire.prenom + ' ' + etat.stagiaire.nom;
+          chargerSeances();
+        });
     });
   }
 
