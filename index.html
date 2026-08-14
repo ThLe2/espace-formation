@@ -630,11 +630,24 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   }
 
   /* --- Lecture, document, exercice --- */
+  /* Affichage d'un document : un PDF s'ouvre dans la page, les autres
+     formats gardent un lien. Employe par les deux etats du panneau,
+     etape validee ou non. */
+  function blocDocument(url, titre) {
+    if (!url) return '';
+    if (/\.pdf(\?|$)/i.test(url)) {
+      return '<div class="doc-cadre"><iframe src="' + echappe(url) + '#view=FitH" title="' +
+             echappe(titre || 'Document') + '"></iframe></div>' +
+             '<p class="doc-liens"><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir en plein écran</a>' +
+             ' · <a href="' + echappe(url) + '" download>Télécharger</a></p>';
+    }
+    return '<p><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir le document</a></p>';
+  }
+
   function panneauSimple(p, tete, e) {
     var fait = estValidee(e.id);
     if (fait) {
-      p.innerHTML = tete +
-        (e.media_url ? '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener">Rouvrir le document</a></p>' : '') +
+      p.innerHTML = tete + blocDocument(e.media_url, e.titre) +
         '<div class="actions"><span class="muted">✓ Étape validée</span> ' + boutonSuivant() + '</div>';
       brancherSuivant();
       return;
@@ -657,14 +670,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
        clic. Les autres formats gardent le lien classique. */
     var estPdf = /\.pdf(\?|$)/i.test(e.media_url || '');
 
-    p.innerHTML = tete +
-      (estPdf
-        ? '<div class="doc-cadre"><iframe id="doc" src="' + echappe(e.media_url) +
-          '#view=FitH" title="' + echappe(e.titre || 'Document') + '"></iframe></div>' +
-          '<p class="doc-liens"><a href="' + echappe(e.media_url) +
-          '" target="_blank" rel="noopener" id="ouvrir">Ouvrir en plein écran</a>' +
-          ' · <a href="' + echappe(e.media_url) + '" download>Télécharger</a></p>'
-        : '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir le document</a></p>') +
+    p.innerHTML = tete + blocDocument(e.media_url, e.titre) +
       '<p class="muted" id="consigne">' +
       (facultative
         ? 'Cette étape est facultative : consultez-la si vous le souhaitez, ou passez à la suivante.'
