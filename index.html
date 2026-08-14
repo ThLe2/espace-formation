@@ -571,6 +571,17 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     if (e.type === 'video')      return void panneauVideo(p, tete, e);
     if (e.type === 'qcm')        return void panneauQcm(p, tete, e);
     if (e.type === 'cas_pratique') return void panneauCas(p, tete, e);
+    /* Un exercice porteur de questions se joue ici, corrige par le
+       serveur. Sans questions, c'est une page a consulter. */
+    if (e.type === 'exercice') {
+      contenu().from('questions').select('id', { count: 'exact', head: true })
+        .eq('etape_id', e.id)
+        .then(function (r) {
+          if (r.count > 0) panneauQcm(p, tete, e);
+          else panneauSimple(p, tete, e);
+        });
+      return;
+    }
     panneauSimple(p, tete, e);
   }
 
@@ -592,16 +603,46 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* --- Lecture, document, exercice --- */
   function panneauSimple(p, tete, e) {
     var fait = estValidee(e.id);
-    var corps = e.media_url
-      ? '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener">Ouvrir le document</a></p>'
-      : '<p class="muted">Prenez connaissance du contenu, puis validez cette étape.</p>';
-    p.innerHTML = tete + corps + '<div class="actions">' +
-      (fait ? '<span class="muted">✓ Étape validée</span> ' + boutonSuivant()
-            : '<button class="btn" id="valider">J\'ai terminé cette étape</button>') +
-      '</div>';
-    brancherSuivant();
-    var b = $('#valider');
-    if (b) b.addEventListener('click', function () {
+    if (fait) {
+      p.innerHTML = tete +
+        (e.media_url ? '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener">Rouvrir le document</a></p>' : '') +
+        '<div class="actions"><span class="muted">✓ Étape validée</span> ' + boutonSuivant() + '</div>';
+      brancherSuivant();
+      return;
+    }
+    if (!e.media_url) {
+      p.innerHTML = tete + '<p class="muted">Le contenu de cette étape n\'est pas encore en ligne. ' +
+        'Signalez-le à votre formateur.</p>';
+      return;
+    }
+
+    /* On ne demande pas au stagiaire de declarer qu'il a lu : on constate
+       qu'il a ouvert le document et qu'il y a passe un temps minimal.
+       C'est faible, mais c'est un constat plutot qu'une declaration. */
+    var ATTENTE = 60;
+    p.innerHTML = tete +
+      '<p><a href="' + echappe(e.media_url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir le document</a></p>' +
+      '<p class="muted" id="consigne">Ouvrez le document pour pouvoir valider cette étape.</p>' +
+      '<div class="actions"><button class="btn" id="valider" disabled>J\'ai terminé cette étape</button></div>';
+
+    var b = $('#valider'), consigne = $('#consigne'), reste = ATTENTE, ouvert = false, tic = null;
+    $('#ouvrir').addEventListener('click', function () {
+      if (ouvert) return;
+      ouvert = true;
+      tic = setInterval(function () {
+        reste--;
+        if (reste > 0) {
+          consigne.textContent = 'Prenez le temps de lire. La validation s\'activera dans '
+            + reste + ' seconde' + (reste > 1 ? 's' : '') + '.';
+        } else {
+          clearInterval(tic);
+          consigne.textContent = 'Vous pouvez valider cette étape.';
+          b.disabled = false;
+        }
+      }, 1000);
+    });
+
+    b.addEventListener('click', function () {
       b.disabled = true;
       lms().rpc('valider_etape_ref', { p_session_id: etat.seance.id, p_etape_ref: e.ref })
         .then(function (r) {
@@ -827,6 +868,27 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
                 : (choix.length ? { index: choix[0] } : {});
             }
           });
+          /* Le serveur refuse les copies incompletes ; on le dit ici pour
+             que le stagiaire sache OU il lui manque une reponse, plutot
+             que de se heurter a un refus apres coup. */
+          var manquantes = qs.filter(function (q) {
+            var r = reponses[q.ref] || {};
+            if (q.type === 'ouverte')   return !String(r.texte || '').trim();
+            if (q.type === 'numerique') return !String(r.valeur || '').trim();
+            if (q.type === 'multiple')  return !(r.index && r.index.length);
+            return r.index === undefined || r.index === null;
+          });
+          if (manquantes.length) {
+            var rangs = manquantes.map(function (q) { return qs.indexOf(q) + 1; });
+            alerte(p, manquantes.length === 1
+              ? 'Il manque la réponse à la question ' + rangs[0] + '.'
+              : 'Il manque ' + manquantes.length + ' réponses : questions ' + rangs.join(', ') + '.');
+            var premiere = document.querySelector('[name="' + manquantes[0].ref + '"]');
+            if (premiere && premiere.scrollIntoView) premiere.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            b.disabled = false; b.textContent = 'Envoyer mes réponses';
+            return;
+          }
+
           evalu().rpc('soumettre', {
             p_session_id: etat.seance.id, p_etape_ref: e.ref,
             p_reponses: reponses
