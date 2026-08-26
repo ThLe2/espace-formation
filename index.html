@@ -637,6 +637,8 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       p.innerHTML = tete + '<p class="muted">Terminez d\'abord l\'étape précédente pour ouvrir celle-ci.</p>';
       return;
     }
+
+    if (e.regle && e.regle.rendu === 'grille') return void panneauGrille(p, tete, e);
     if (e.type === 'video')      return void panneauVideo(p, tete, e);
     if (e.type === 'qcm')        return void panneauQcm(p, tete, e);
     if (e.type === 'cas_pratique' || e.type === 'exercice') {
@@ -719,6 +721,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
                   : 'Ouvrez le document pour pouvoir valider cette étape.')) + '</p>' +
       '<div class="actions"><button class="btn" id="valider" disabled>J\'ai terminé cette étape</button>' +
       (facultative ? ' ' + boutonSuivant() : '') + '</div>';
+    
     if (facultative) brancherSuivant();
 
     var b = $('#valider'), consigne = $('#consigne'), reste = ATTENTE, ouvert = false, tic = null;
@@ -890,6 +893,152 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     return (segments || []).reduce(function (t, s) { return t + (s[1] - s[0]); }, 0);
   }
 
+  /* --- Grille de mots croisés ------------------------------------- *
+   * Rendu déclaré par l'étape : regle.rendu = 'grille'. La géométrie
+   * vit dans regle.grille et ne porte AUCUNE lettre de solution : les
+   * corrigés restent dans le schéma privé, et la page ne les découvre
+   * qu'après la remise, dans la réponse du serveur.
+   * La remise est unique : les deux ateliers se remplissent à l'écran
+   * et partent ensemble, parce que soumettre() n'accepte qu'une copie
+   * complète et une seule fois.
+   * ---------------------------------------------------------------- */
+  function panneauGrille(p, tete, e) {
+    if (estValidee(e.id)) return void panneauQcm(p, tete, e);
+
+    var G = (e.regle && e.regle.grille) || null;
+    if (!G) return void panneauQcm(p, tete, e);   /* géométrie absente : rendu générique */
+
+    var MOTS = [];
+    (G.horiz || []).forEach(function (m) { MOTS.push({ m: m, h: true }); });
+    (G.vert  || []).forEach(function (m) { MOTS.push({ m: m, h: false }); });
+    var ouvertA = new Date().toISOString();
+
+    /* Case saisissable : indexée par ligne et colonne. */
+    var occupe = {};
+    (G.cases || []).forEach(function (c) { occupe[c.r + '_' + c.c] = c; });
+
+    var h = tete +
+      '<div class="atelier"><p class="eyebrow">La grille</p>' +
+      '<p class="atelier-consigne">Retrouvez les mots correspondant aux définitions. ' +
+      'Cliquez sur une définition pour vous placer dans la grille, ou directement sur une case. ' +
+      'Les cases dorées composent le mot de l\'atelier 2.</p></div>' +
+      '<div class="grille-enveloppe"><table class="grille">';
+
+    for (var r = 0; r < G.H; r++) {
+      h += '<tr>';
+      for (var c = 0; c < G.W; c++) {
+        var cel = occupe[r + '_' + c];
+        if (!cel) { h += '<td class="vide"></td>'; continue; }
+        h += '<td id="td' + r + '_' + c + '" class="case' + (cel.m ? ' doree' : '') + '">' +
+             (cel.n ? '<span class="num">' + cel.n + '</span>' : '') +
+             '<input id="in' + r + '_' + c + '" maxlength="1" autocomplete="off" ' +
+             'inputmode="text" data-r="' + r + '" data-c="' + c + '"></td>';
+      }
+      h += '</tr>';
+    }
+    h += '</table></div><div class="definitions">';
+
+    ['horiz', 'vert'].forEach(function (sens) {
+      h += '<div><p class="eyebrow">' + (sens === 'horiz' ? 'Horizontalement' : 'Verticalement') + '</p><ul>';
+      (G[sens] || []).forEach(function (m) {
+        h += '<li id="def_' + echappe(m.ref) + '" data-r="' + m.r + '" data-c="' + m.c +
+             '" data-sens="' + sens + '"><b>' + m.n + '.</b> ' + echappe(m.def) +
+             ' <span class="muted">(' + m.len + ')</span></li>';
+      });
+      h += '</ul></div>';
+    });
+
+    h += '</div><div class="atelier"><p class="eyebrow">Le mot à reconstituer</p>' +
+         '<p class="atelier-consigne">Les cases dorées contiennent les lettres d\'un même mot, ' +
+         'dans le désordre' + (G.lettres ? ' (' + echappe(G.lettres) + ')' : '') + '. 3 points.</p>' +
+         '<input id="motCache" maxlength="24" autocomplete="off" placeholder="Le mot" ' +
+         'style="max-width:16rem;text-transform:uppercase"></div>' +
+         '<div class="actions"><button class="btn" id="envoyer-grille">Envoyer mes réponses</button>' +
+         '<span class="muted" style="font-size:.85rem">Une seule remise est possible.</span></div>';
+
+    p.innerHTML = h;
+
+    /* --- saisie : avance automatique, retour arrière, flèches --- */
+    function caseA(r, c) { return document.getElementById('in' + r + '_' + c); }
+    var sensCourant = 'horiz';
+
+    Array.prototype.forEach.call(p.querySelectorAll('.case input'), function (inp) {
+      inp.addEventListener('input', function () {
+        this.value = (this.value || '').toUpperCase().replace(/[^A-Z]/g, '');
+        if (!this.value) return;
+        var r = +this.dataset.r, c = +this.dataset.c;
+        var suiv = sensCourant === 'horiz' ? caseA(r, c + 1) : caseA(r + 1, c);
+        if (suiv) suiv.focus();
+      });
+      inp.addEventListener('keydown', function (ev) {
+        var r = +this.dataset.r, c = +this.dataset.c, cible = null;
+        if (ev.key === 'Backspace' && !this.value) {
+          cible = sensCourant === 'horiz' ? caseA(r, c - 1) : caseA(r - 1, c);
+        } else if (ev.key === 'ArrowRight') { cible = caseA(r, c + 1); sensCourant = 'horiz'; }
+        else if (ev.key === 'ArrowLeft')  { cible = caseA(r, c - 1); sensCourant = 'horiz'; }
+        else if (ev.key === 'ArrowDown')  { cible = caseA(r + 1, c); sensCourant = 'vert'; }
+        else if (ev.key === 'ArrowUp')    { cible = caseA(r - 1, c); sensCourant = 'vert'; }
+        if (cible) { ev.preventDefault(); cible.focus(); }
+      });
+      inp.addEventListener('focus', function () { this.select(); });
+    });
+
+    Array.prototype.forEach.call(p.querySelectorAll('.definitions li'), function (li) {
+      li.addEventListener('click', function () {
+        sensCourant = this.dataset.sens;
+        var d = caseA(+this.dataset.r, +this.dataset.c);
+        if (d) d.focus();
+      });
+    });
+
+    /* --- remise --- */
+    $('#envoyer-grille').addEventListener('click', function () {
+      var b = $('#envoyer-grille');
+
+      /* Un mot se reconstitue en parcourant ses cases. Une case laissée
+         vide rend le mot incomplet : le serveur refuserait la copie, on
+         le dit ici pour que le stagiaire sache OU il lui manque quelque
+         chose. */
+      var reponses = {}, incomplets = [];
+      MOTS.forEach(function (x) {
+        var m = x.m, mot = '';
+        for (var i = 0; i < m.len; i++) {
+          var el = caseA(x.h ? m.r : m.r + i, x.h ? m.c + i : m.c);
+          mot += (el && el.value) ? el.value : '';
+        }
+        reponses[m.ref] = { texte: mot };
+        if (mot.length < m.len) incomplets.push(m.n);
+      });
+
+      var cache = ($('#motCache').value || '').toUpperCase().replace(/[^A-Z]/g, '');
+      reponses[G.ref_cache] = { texte: cache };
+
+      if (incomplets.length) {
+        alerte(p, incomplets.length === 1
+          ? 'Il reste des cases vides dans un mot. Complétez la grille avant d\'envoyer.'
+          : 'Il reste des cases vides dans ' + incomplets.length + ' mots. Complétez la grille avant d\'envoyer.');
+        return;
+      }
+      if (!cache) {
+        alerte(p, 'Saisissez le mot de l\'atelier 2 avant d\'envoyer.');
+        $('#motCache').focus();
+        return;
+      }
+
+      b.disabled = true; b.textContent = 'Envoi…';
+      evalu().rpc('soumettre', {
+        p_session_id: etat.seance.id, p_etape_ref: e.ref, p_reponses: reponses
+      }).then(function (rr) {
+        if (rr.error) {
+          alerte(p, rr.error.message);
+          b.disabled = false; b.textContent = 'Envoyer mes réponses';
+          return;
+        }
+        afficherResultat(p, tete, premiereLigne(rr.data), []);
+        rafraichirSeance(false);
+      });
+    });
+  }
   /* --- Questionnaire --- */
   function panneauQcm(p, tete, e) {
     if (estValidee(e.id)) {
