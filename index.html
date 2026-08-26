@@ -558,16 +558,22 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     var p = progressionDe(etapeId);
     return !!(p && p.statut === 'validee');
   }
+  
   // Une étape s'ouvre quand toutes les étapes bloquantes qui la précèdent sont validées.
   // Le serveur applique la même règle : ceci n'est qu'un affichage honnête.
+  // On s'arrête sur l'étape elle-même, et non sur son rang : depuis que le
+  // parcours est découpé en séquences, `ordre` repart à 1 dans chacune et
+  // ne peut plus servir à comparer deux étapes du parcours.
+  
   function estOuverte(etape) {
     for (var i = 0; i < etat.etapes.length; i++) {
       var e = etat.etapes[i];
-      if (e.ordre >= etape.ordre) break;
+      if (e.id === etape.id) break;
       if (e.bloquante && !estValidee(e.id)) return false;
     }
     return true;
   }
+  
   function premiereOuverte() {
     for (var i = 0; i < etat.etapes.length; i++) {
       if (!estValidee(etat.etapes[i].id) && estOuverte(etat.etapes[i])) return etat.etapes[i];
