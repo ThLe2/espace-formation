@@ -245,6 +245,12 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       font-size: .87rem; padding: .25rem .3rem; border-radius: 4px; cursor: pointer;
     }
     .definitions li:hover { background: var(--prune-clair, #F4E6EE); }
+
+    /* Verdict : « acquis » n'appartient qu'aux étapes évaluées. Une étape
+       d'entraînement affiche la phrase qu'elle porte, ou rien. */
+    .verdict { margin:.4rem 0 0; font-weight:600 }
+    .verdict.ok { color:var(--vert) }
+    .verdict.ko { color:var(--prune) }
 </style>
 </head>
 <body>
@@ -1040,7 +1046,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
           b.disabled = false; b.textContent = 'Envoyer mes réponses';
           return;
         }
-        afficherResultat(p, tete, premiereLigne(rr.data), []);
+        afficherResultat(p, tete, premiereLigne(rr.data), [], e);
         rafraichirSeance(false);
       });
     });
@@ -1064,7 +1070,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
             score: t.score, bareme: t.bareme, pourcentage: t.pourcentage,
             seuil: e.seuil_pct, reussi: (e.seuil_pct == null ? null : t.pourcentage >= e.seuil_pct),
             detail: t.detail
-          }, []);
+          }, [], e);
         });
       return;
     }
@@ -1172,7 +1178,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
               b.disabled = false; b.textContent = 'Envoyer mes réponses';
               return;
             }
-            afficherResultat(p, tete, premiereLigne(rr.data), qs);
+            afficherResultat(p, tete, premiereLigne(rr.data), qs, e);
             rafraichirSeance(false);
           });
         });
@@ -1182,7 +1188,24 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* Les fonctions qui renvoient une table arrivent sous forme de liste. */
   function premiereLigne(d) { return (d && d.length !== undefined) ? (d[0] || {}) : (d || {}); }
 
-  function afficherResultat(p, tete, res, qs) {
+  /* Le verdict d'une étape évaluée est prononcé par le serveur : acquis
+     ou non acquis, et cela compte pour le financeur. Une étape
+     d'entraînement ne prononce rien — elle oriente : on affiche la
+     phrase que porte l'étape, et rien si elle n'en porte pas. */
+  function verdict(res, e) {
+    var atteint = (res.seuil == null) ? null : (res.pourcentage >= res.seuil);
+    var r = (e && e.regle) || {};
+    if (atteint === null) return '';
+    if (e && e.evalue) {
+      return '<p class="verdict ' + (atteint ? 'ok' : 'ko') + '">' +
+             (atteint ? 'Acquis' : 'Non acquis') + '</p>';
+    }
+    var phrase = atteint ? r.message_reussite : r.message_echec;
+    return phrase ? '<p class="verdict ' + (atteint ? 'ok' : 'ko') + '">' +
+                    echappe(phrase) + '</p>' : '';
+  }
+
+  function afficherResultat(p, tete, res, qs, e) {
     /* Le stagiaire vient d'envoyer sa copie et attend son score : on
        l'y amene, plutot que de le laisser chercher l'ascenseur. */
     setTimeout(function () {
@@ -1194,9 +1217,9 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
             '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
             res.bareme + '</span></p>' +
             (res.seuil != null
-              ? '<p class="muted">' + res.pourcentage + ' % — seuil de reussite : ' + res.seuil + ' %' +
-                (res.reussi === true ? ' · acquis' : res.reussi === false ? ' · non acquis' : '') + '</p>'
-              : '');
+              ? '<p class="muted">' + res.pourcentage + ' % — seuil de reussite : ' + res.seuil + ' %</p>'
+              : '') +
+            verdict(res, e);
     if (res.detail && res.detail.length) {
       h += '<ul class="corrige">';
       res.detail.forEach(function (d) {
