@@ -251,6 +251,32 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     .verdict { margin:.4rem 0 0; font-weight:600 }
     .verdict.ok { color:var(--vert) }
     .verdict.ko { color:var(--prune) }
+
+  /* --- Dossier documentaire d'un cas pratique (panneau latéral) --- */
+    .dossier { position: fixed; top: 0; right: 0; bottom: 0; width: min(50vw, 820px); z-index: 50;
+               display: flex; flex-direction: column; background: #fff;
+               border-left: 3px solid var(--prune, #8C1E70); box-shadow: -6px 0 18px rgba(0,0,0,.12); }
+    .dossier[hidden] { display: none; }
+    .dossier-tete { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+                    padding: .55rem 1rem; background: var(--prune-fonce, #5E1349); color: #fff; font-size: .9rem; }
+    .dossier-tete a { color: #F4E6EE; margin-right: .9rem; }
+    .dossier-tete button { font: inherit; font-size: .85rem; cursor: pointer; background: transparent;
+                           color: #fff; border: 1px solid rgba(255,255,255,.6); border-radius: 4px; padding: .2rem .7rem; }
+    .dossier iframe { flex: 1; width: 100%; border: 0; }
+    .btn-dossier { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 49; cursor: pointer;
+                   font: inherit; font-weight: 600; color: #fff; background: var(--prune, #8C1E70);
+                   border: 0; border-radius: 999px; padding: .7rem 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    .btn-dossier[hidden] { display: none; }
+    body.avec-dossier main { max-width: none; margin: 0; padding-right: calc(min(50vw, 820px) + 1.5rem); }
+    body.avec-dossier .seance { grid-template-columns: 1fr; }
+    body.avec-dossier #fil { display: none; }
+    @media (max-width: 1099px) {
+      .dossier { width: 100vw; border-left: 0; }
+      body.avec-dossier main { padding-right: 1.5rem; }
+    }
+  /* --- Réponses rédigées : compteur et collage désactivé --- */
+    .compteur { font-size: .8rem; color: var(--gris-moyen, #8A7A85); margin: .3rem 0 0; text-align: right; }
+    .compteur.refus { color: var(--alerte, #B3261E); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -459,6 +485,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
    * Vue : mes séances
    * ------------------------------------------------------------------ */
   function afficherSeances() {
+    retirerDossier();
     var jour = aujourdhui();
     var duJour = etat.seances.filter(function (s) { return s.date_debut <= jour && s.date_fin >= jour; });
     var aVenir = etat.seances.filter(function (s) { return s.date_debut > jour; });
@@ -638,8 +665,47 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* ------------------------------------------------------------------ *
    * Panneau de l'étape courante
    * ------------------------------------------------------------------ */
+  /* --- Dossier documentaire d'un cas pratique ---
+     Une étape cas_pratique qui porte un media_url affiche ce document
+     dans un panneau latéral, à côté des questions : le stagiaire lit et
+     rédige au même endroit. Le panneau vit hors de #vue-seance, si bien
+     qu'un redessin de la séance ne recharge pas la page du dossier — le
+     chronomètre qu'elle porte continue de tourner. */
+  var dossierUrl = null;
+  function retirerDossier() {
+    ['dossier', 'btn-dossier'].forEach(function (id) {
+      var n = document.getElementById(id); if (n) n.parentNode.removeChild(n);
+    });
+    document.body.classList.remove('avec-dossier');
+    dossierUrl = null;
+  }
+  function poserDossier(e) {
+    var url = (e && e.type === 'cas_pratique' && e.media_url && estOuverte(e)) ? e.media_url : null;
+    if (!url) { retirerDossier(); return; }
+    if (url === dossierUrl) return;
+    retirerDossier();
+    dossierUrl = url;
+    var d = document.createElement('aside');
+    d.id = 'dossier'; d.className = 'dossier'; d.setAttribute('aria-label', 'Votre dossier');
+    d.innerHTML = '<div class="dossier-tete"><strong>Votre dossier</strong><span>' +
+      '<a href="' + echappe(url) + '" target="_blank" rel="noopener">Plein écran</a>' +
+      '<button type="button" id="dossier-masquer">Masquer</button></span></div>' +
+      '<iframe src="' + echappe(url) + '" title="Votre dossier"></iframe>';
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'btn-dossier'; b.className = 'btn-dossier'; b.textContent = 'Afficher mon dossier';
+    document.body.appendChild(d); document.body.appendChild(b);
+    function basculer(ouvrir) {
+      d.hidden = !ouvrir; b.hidden = ouvrir;
+      document.body.classList.toggle('avec-dossier', ouvrir);
+    }
+    document.getElementById('dossier-masquer').addEventListener('click', function () { basculer(false); });
+    b.addEventListener('click', function () { basculer(true); });
+    basculer(window.innerWidth >= 1100);
+  }
+
   function dessinerPanneau() {
     var p = $('#panneau'), e = etat.courante;
+    poserDossier(e);
     if (!e) { p.innerHTML = '<p class="muted">Cette séance ne contient aucune étape.</p>'; return; }
 
     var tete = '<div class="panneau-tete"><p class="eyebrow">' + libelleType(e.type) + '</p>' +
@@ -688,8 +754,20 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* Affichage d'un document : un PDF s'ouvre dans la page, les autres
      formats gardent un lien. Employe par les deux etats du panneau,
      etape validee ou non. */
+  /* Les pages HTML (fiches interactives, postes, corrections) s'affichent
+     elles aussi dans le portail : le stagiaire ne quitte plus le parcours.
+     Mettre false pour revenir au lien « Ouvrir le document ». */
+  var INTEGRER_HTML = true;
+  function estIntegre(url) {
+    return /\.pdf(\?|#|$)/i.test(url || '') || (INTEGRER_HTML && /\.html?(\?|#|$)/i.test(url || ''));
+  }
   function blocDocument(url, titre) {
     if (!url) return '';
+    if (INTEGRER_HTML && /\.html?(\?|#|$)/i.test(url)) {
+      return '<div class="doc-cadre"><iframe src="' + echappe(url) + '" title="' +
+             echappe(titre || 'Document') + '"></iframe></div>' +
+             '<p class="doc-liens"><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir en plein écran</a></p>';
+    }
     if (/\.pdf(\?|$)/i.test(url)) {
       return '<div class="doc-cadre"><iframe src="' + echappe(url) + '#view=FitH" title="' +
              echappe(titre || 'Document') + '"></iframe></div>' +
@@ -723,7 +801,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     /* Un PDF s'affiche dans la page : le stagiaire ne quitte pas le
        parcours, et le decompte demarre a l'affichage plutot qu'a un
        clic. Les autres formats gardent le lien classique. */
-    var estPdf = /\.pdf(\?|$)/i.test(e.media_url || '');
+    var estPdf = estIntegre(e.media_url);
 
     p.innerHTML = tete + blocDocument(e.media_url, e.titre) +
       '<p class="muted" id="consigne">' +
@@ -1124,6 +1202,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
         h += '<div class="actions"><button class="btn" type="submit" id="envoyer">Envoyer mes réponses</button>' +
              '<span class="muted" style="font-size:.85rem">Une seule tentative est possible.</span></div></form>';
         p.innerHTML = h;
+        initCompteurs(p);
 
         $('#form-qcm').addEventListener('submit', function (ev) {
           ev.preventDefault();
@@ -1250,6 +1329,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       '<textarea id="cas" style="min-height:16rem" placeholder="Votre réponse"></textarea>' +
       '<div class="actions"><button class="btn" id="envoyer-cas">Envoyer mon travail</button>' +
       '<span class="muted" style="font-size:.85rem">Un seul envoi est possible.</span></div>';
+    initCompteurs(p);
     $('#envoyer-cas').addEventListener('click', function () {
       var b = $('#envoyer-cas'), txt = $('#cas').value.trim();
       if (!txt) { alerte(p, 'Votre réponse est vide.'); return; }
@@ -1263,6 +1343,53 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       });
     });
   }
+
+  /* --- Réponses rédigées : saisie au clavier uniquement ---
+     Le collage, le dépôt de texte et le menu contextuel sont refusés dans
+     les zones de réponse ; copier ou couper un énoncé l'est aussi dans le
+     panneau. Un compteur de caractères suit chaque zone (utile pour un SMS). */
+  function majCompteur(t, refus) {
+    var c = t.nextElementSibling;
+    if (!c || !c.classList.contains('compteur')) {
+      c = document.createElement('p'); c.className = 'compteur';
+      t.parentNode.insertBefore(c, t.nextSibling);
+    }
+    if (refus) {
+      c.classList.add('refus');
+      c.textContent = 'Le collage est désactivé : rédigez votre réponse au clavier.';
+      clearTimeout(t._refus);
+      t._refus = setTimeout(function () { majCompteur(t); }, 2500);
+      return;
+    }
+    var n = t.value.length;
+    c.classList.remove('refus');
+    c.textContent = n + ' caractère' + (n > 1 ? 's' : '') + ', espaces compris';
+  }
+  function initCompteurs(p) {
+    Array.prototype.forEach.call(p.querySelectorAll('textarea'), function (t) { majCompteur(t); });
+  }
+  function zoneReponse(n) {
+    return n && n.closest && n.closest('#panneau textarea, #panneau input[type="text"]');
+  }
+  ['paste', 'drop'].forEach(function (type) {
+    document.addEventListener(type, function (ev) {
+      var z = zoneReponse(ev.target);
+      if (!z) return;
+      ev.preventDefault();
+      if (z.tagName === 'TEXTAREA') majCompteur(z, true);
+    }, true);
+  });
+  ['copy', 'cut'].forEach(function (type) {
+    document.addEventListener(type, function (ev) {
+      if (ev.target && ev.target.closest && ev.target.closest('#panneau')) ev.preventDefault();
+    }, true);
+  });
+  document.addEventListener('contextmenu', function (ev) {
+    if (zoneReponse(ev.target)) ev.preventDefault();
+  }, true);
+  document.addEventListener('input', function (ev) {
+    if (ev.target && ev.target.tagName === 'TEXTAREA' && ev.target.closest('#panneau')) majCompteur(ev.target);
+  }, true);
 
   function alerte(p, texte) {
     var d = document.createElement('div');
