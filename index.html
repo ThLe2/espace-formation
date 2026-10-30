@@ -183,6 +183,10 @@ video{width:100%; display:block; background:#000}
 .question:first-of-type{padding-top:0}
 .question-num{font-size:.72rem; font-weight:700; letter-spacing:.12em; color:var(--rose); text-transform:uppercase}
 .question-enonce{font-weight:600; color:var(--vert); margin:.35rem 0 1rem; font-size:1.02rem}
+/* Les e-mails reproduits, listes et blocs signature gardent leurs retours à la ligne. */
+.question-enonce, .prop span, .corrige .muted, .corrige .texte-stagiaire{white-space:pre-line}
+.support-video{margin-top:1.4rem; padding-top:1rem; border-top:1px solid var(--trame)}
+.corrige .texte-stagiaire{display:block; margin:.5rem 0; padding:.6rem .8rem; background:var(--fond); border-left:3px solid var(--trame)}
 .prop{display:flex; gap:.7rem; align-items:flex-start; padding:.5rem .7rem; border-radius:2px; cursor:pointer}
 .prop:hover{background:var(--fond)}
 .prop input{margin:.35rem 0 0; accent-color:var(--prune); flex:none}
@@ -865,7 +869,13 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       '<div class="vu-tete" id="vu-tete"></div></div>' +
       '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : 90 %</span></div></div>' +
       '<div class="note" id="note-video" hidden></div>' +
-      '<div class="actions" id="actions-video"></div>';
+      '<div class="actions" id="actions-video"></div>' +
+      /* regle.support : document commenté par la capsule (e-mail, tableau…),
+         affiché sous la vidéo pour être lu pendant le visionnage. */
+      (regle.support
+        ? '<div class="support-video"><p class="eyebrow">' + echappe(regle.support_titre || 'Le document commenté dans la capsule') + '</p>' +
+          blocDocument(regle.support, regle.support_titre || 'Support de la capsule') + '</div>'
+        : '');
 
     var video = $('#capsule');
     var selVitesse = $('#vitesse');
@@ -1293,8 +1303,10 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     var enonces = {};
     qs.forEach(function (q) { enonces[q.ref] = q.enonce; });
     var h = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
-            '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
-            res.bareme + '</span></p>' +
+            (+res.bareme > 0
+              ? '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
+                res.bareme + '</span></p>'
+              : '') +
             (res.seuil != null
               ? '<p class="muted">' + res.pourcentage + ' % — seuil de reussite : ' + res.seuil + ' %</p>'
               : '') +
@@ -1304,8 +1316,32 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       res.detail.forEach(function (d) {
         var ref = d.question || d.ref;
         var c = d.juste === true ? 'juste' : (d.juste === false ? 'faux' : '');
+        /* attendu.correction = 'autonome' : rédaction non notée que le
+           stagiaire compare lui-même à la réponse modèle (explication). */
+        var autonome = d.juste == null && d.attendu && d.attendu.correction === 'autonome';
+        var texte = d.donnee && d.donnee.texte;
+        /* Dictée notée par le serveur : fautes, points obtenus, mots en erreur. */
+        var dictee = d.fautes != null;
+        if (dictee) {
+          var nf = +d.fautes;
+          h += '<li class="' + (nf === 0 ? 'juste' : 'faux') + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
+               ' — ' + String(nf).replace('.', ',') + ' faute' + (nf > 1 ? 's' : '') +
+               ' · ' + String(d.points_obtenus).replace('.', ',') + ' / ' + d.points + ' points';
+          if (d.erreurs && d.erreurs.length) {
+            h += '<span class="texte-stagiaire"><em>Vos erreurs :</em>\n' + d.erreurs.map(function (x) {
+              return x.donne == null ? '« ' + echappe(x.attendu) + ' » oublié'
+                   : x.attendu == null ? '« ' + echappe(x.donne) + ' » en trop'
+                   : '« ' + echappe(x.donne) + ' » au lieu de « ' + echappe(x.attendu) + ' »';
+            }).join('\n') + '</span>';
+          }
+          if (texte) h += '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>';
+          h += (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
+          return;
+        }
         h += '<li class="' + c + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
-             (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte' : ' — à corriger par le formateur') +
+             (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte'
+               : autonome ? ' — comparez votre texte à la réponse modèle' : ' — à corriger par le formateur') +
+             (autonome && texte ? '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>' : '') +
              (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
       });
       h += '</ul>';
@@ -1366,7 +1402,27 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     c.textContent = n + ' caractère' + (n > 1 ? 's' : '') + ', espaces compris';
   }
   function initCompteurs(p) {
-    Array.prototype.forEach.call(p.querySelectorAll('textarea'), function (t) { majCompteur(t); });
+    /* regle.correcteur = false : aucune aide à l'orthographe dans les zones
+       de réponse (dictée, rédactions notées sur la langue). Le navigateur ne
+       souligne plus les fautes et ne propose plus de correction ; les
+       extensions de type correcteur sont priées de s'abstenir.
+       regle.hauteur_zone (en rem) agrandit la zone de saisie. */
+    var r = (etat.courante && etat.courante.regle) || {};
+    Array.prototype.forEach.call(p.querySelectorAll('textarea, input[type="text"]'), function (t) {
+      if (r.correcteur === false) {
+        t.setAttribute('spellcheck', 'false');
+        t.setAttribute('autocorrect', 'off');
+        t.setAttribute('autocapitalize', 'off');
+        t.setAttribute('autocomplete', 'off');
+        t.setAttribute('data-gramm', 'false');
+        t.setAttribute('data-gramm_editor', 'false');
+        t.setAttribute('data-enable-grammarly', 'false');
+      }
+      if (t.tagName === 'TEXTAREA') {
+        if (r.hauteur_zone) t.style.minHeight = (+r.hauteur_zone) + 'rem';
+        majCompteur(t);
+      }
+    });
   }
   function zoneReponse(n) {
     return n && n.closest && n.closest('#panneau textarea, #panneau input[type="text"]');
