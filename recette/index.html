@@ -176,7 +176,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
       return lms.rpc('est_gestionnaire').then(function (g) {
         var gestionnaire = (g.data === true);
         var ret = retourDemande();
-        if (ret && depuisConnexion && (gestionnaire || !/administration/.test(ret))) {
+        /* Le personnel ne repart que vers l'administration : un retour vers
+           le portail (laissé par une session stagiaire précédente) est ignoré. */
+        if (ret && depuisConnexion && /^admin\.html/.test(ret) && (gestionnaire || !/administration/.test(ret))) {
           location.replace(ret); return;
         }
         $('#tuile-admin').hidden = !gestionnaire;
