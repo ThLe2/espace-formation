@@ -92,6 +92,19 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
       il ne peut pas être réinitialisé depuis cette page.</p>
   </form>
 
+  <!-- Session déjà ouverte sur ce poste : continuer ou changer de compte -->
+  <section id="vue-reprise" class="carte" hidden>
+    <span class="logo" aria-label="Accompagna">
+      <svg width="54" height="44" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#8C1E70"/><circle cx="42" cy="14" r="10" fill="#8C1E70"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="mot">accompagna</span>
+    </span>
+    <p class="eyebrow">Espace de formation</p>
+    <h1 style="font-size:1.4rem;margin-bottom:.8rem">Une session est déjà ouverte</h1>
+    <p style="margin:0 0 1.6rem">Ce poste est connecté avec le compte<br><strong id="reprise-mail"></strong></p>
+    <button type="button" class="btn" id="btn-continuer">Continuer avec ce compte</button>
+    <p style="text-align:center;margin:1.1rem 0 0"><button type="button" class="lien" id="btn-changer">Ce n'est pas moi : changer de compte</button></p>
+  </section>
+
   <!-- Choix de l'espace, pour le personnel uniquement -->
   <section id="vue-choix" class="carte large" hidden>
     <span class="logo" aria-label="Accompagna">
@@ -159,7 +172,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
   }
 
   function montrer(id) {
-    ['#vue-attente', '#vue-connexion', '#vue-choix'].forEach(function (v) { $(v).hidden = (v !== id); });
+    ['#vue-attente', '#vue-connexion', '#vue-reprise', '#vue-choix'].forEach(function (v) { $(v).hidden = (v !== id); });
   }
 
   /* L'aiguillage : la base dit qui est du personnel et qui gère.
@@ -214,13 +227,25 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
     db.auth.signOut().then(function () { location.replace('index.html'); });
   });
 
-  /* Session déjà ouverte : on aiguille sans redemander le mot de passe. */
+  /* Session déjà ouverte : sur un poste partagé, ce n'est peut-être pas
+     la même personne. On montre le compte et on laisse choisir. */
   db.auth.getSession().then(function (r) {
     var s = r.data && r.data.session;
     if (!s) { montrer('#vue-connexion'); return; }
-    return aiguiller(s, true).catch(function () {
-      return db.auth.signOut().then(function () { montrer('#vue-connexion'); });
-    });
+    $('#reprise-mail').textContent = (s.user && s.user.email) || '';
+    montrer('#vue-reprise');
+    $('#btn-continuer').onclick = function () {
+      this.disabled = true;
+      aiguiller(s, true).catch(function () {
+        return db.auth.signOut().then(function () { montrer('#vue-connexion'); });
+      });
+    };
+    $('#btn-changer').onclick = function () {
+      db.auth.signOut().then(function () {
+        $('#email').value = ''; $('#mdp').value = '';
+        montrer('#vue-connexion'); $('#email').focus();
+      });
+    };
   });
 })();
 </script>
