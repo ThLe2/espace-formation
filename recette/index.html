@@ -160,7 +160,12 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
     return;
   }
 
-  var db = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+  /* La session ne vit que dans l'onglet (sessionStorage) : fermer l'onglet
+     ou le navigateur déconnecte, ce qu'exigent les postes de salle partagés.
+     Les anciennes sessions conservées durablement sont effacées. */
+  try { Object.keys(localStorage).forEach(function (k) { if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+  var OPTIONS_AUTH = { auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true } };
+  var db = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, OPTIONS_AUTH);
 
   /* Après connexion, retour éventuel vers la page qui a demandé
      l'identification. Seules nos deux pages sont acceptées. */

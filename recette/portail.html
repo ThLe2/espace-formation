@@ -375,8 +375,13 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     return;
   }
 
+  /* La session ne vit que dans l'onglet (sessionStorage) : fermer l'onglet
+     ou le navigateur déconnecte, ce qu'exigent les postes de salle partagés.
+     Les anciennes sessions conservées durablement sont effacées. */
+  try { Object.keys(localStorage).forEach(function (k) { if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+  var OPTIONS_AUTH = { auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true } };
   var db = APERCU ? window.LMS_CLIENT_DEMO()
-                  : window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+                  : window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, OPTIONS_AUTH);
   var lms = function () { return db.schema('lms'); };
   var contenu = function () { return db.schema('contenu'); };
   var evalu = function () { return db.schema('eval'); };
@@ -1478,7 +1483,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     document.getElementById('ruban-demo').hidden = false;
     /* Un membre du personnel connecté vient du choix des espaces. */
     try {
-      if (Object.keys(localStorage).some(function (k) { return /^sb-.*-auth-token$/.test(k); }))
+      if (Object.keys(sessionStorage).some(function (k) { return /^sb-.*-auth-token$/.test(k); }))
         document.getElementById('retour-personnel').hidden = false;
     } catch (e) {}
   }

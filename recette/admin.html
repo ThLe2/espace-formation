@@ -405,8 +405,15 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   var estGestionnaire = false;
   /* En ligne, la session vient de l'écran de connexion unique et le
      client Supabase la renouvelle tout seul (jeton valable une heure). */
-  var PARTAGE = (location.protocol !== 'file:' && window.supabase && window.supabase.createClient)
-    ? window.supabase.createClient(URL_PROJET, CLE) : null;
+  var PARTAGE = null;
+  if (location.protocol !== 'file:' && window.supabase && window.supabase.createClient) {
+    /* La session ne vit que dans l'onglet (sessionStorage) : fermer l'onglet
+     ou le navigateur déconnecte, ce qu'exigent les postes de salle partagés.
+     Les anciennes sessions conservées durablement sont effacées. */
+  try { Object.keys(localStorage).forEach(function (k) { if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+  var OPTIONS_AUTH = { auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true } };
+  PARTAGE = window.supabase.createClient(URL_PROJET, CLE, OPTIONS_AUTH);
+  }
   function versConnexion() {
     location.replace('index.html?retour=' + encodeURIComponent('admin.html?espace=' + ESPACE));
   }
