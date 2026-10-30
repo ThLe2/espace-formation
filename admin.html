@@ -353,10 +353,10 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
     <section id="vue-personnel" hidden>
       <div class="carte">
-        <h2>Enrôler un membre du personnel</h2>
-        <p class="sub"><b>Le compte doit exister au préalable</b> dans Supabase,
-          sous Authentication → Users. Cette page rattache un compte existant à un rôle ;
-          elle ne le crée pas.</p>
+        <h2>Ajouter un membre du personnel</h2>
+        <p class="sub">Le compte de connexion est créé ici, avec un mot de passe affiché
+          <b>une seule fois</b> : notez-le pour le transmettre. Si l'adresse a déjà un compte,
+          il est simplement rattaché au personnel, avec son mot de passe actuel.</p>
         <div class="grille">
           <div style="grid-column:span 2"><label for="p-email">Adresse e-mail du compte</label>
             <input id="p-email" type="email" placeholder="prenom.nom@tmk-performances.com"></div>
@@ -368,8 +368,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
             <option value="admin">Administrateur</option>
           </select></div>
         </div>
-        <div class="actions"><button class="btn" id="btn-enroler">Enrôler</button></div>
+        <div class="actions"><button class="btn" id="btn-enroler">Créer le compte et enrôler</button></div>
         <div id="msg-personnel"></div>
+        <div id="resultat-personnel"></div>
       </div>
 
       <div class="carte">
@@ -1444,16 +1445,22 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
             return '<option value="' + echappe(f.email) + '">' + echappe(f.nom) + ' ' +
                    echappe(f.prenom) + ' — ' + echappe(f.role) + '</option>';
           }).join('') || '<option value="">Aucun formateur actif</option>';
-        var h = '<table><tr><th>Nom</th><th>Adresse</th><th>Rôle</th><th>Compte lié</th></tr>';
+        var h = '<table><tr><th>Nom</th><th>Adresse</th><th>Rôle</th><th>Compte lié</th><th></th></tr>';
         PERSONNEL.forEach(function (f) {
           h += '<tr><td>' + echappe(f.nom) + ' ' + echappe(f.prenom) + '</td>' +
                '<td>' + echappe(f.email || '—') + '</td>' +
                '<td>' + echappe(f.role) + '</td>' +
                '<td>' + (f.user_id ? '<span class="etat ok">oui</span>'
-                                   : '<span class="etat alerte">non</span>') + '</td></tr>';
+                                   : '<span class="etat alerte">non</span>') + '</td>' +
+               '<td>' + (f.user_id && f.email
+                 ? '<button class="btn-mini" data-mdp="' + echappe(f.email) + '">Nouveau mot de passe</button>'
+                 : '') + '</td></tr>';
         });
         $('#liste-personnel').innerHTML = PERSONNEL.length ? h + '</table>'
           : '<p class="muted">Aucun membre du personnel enregistré.</p>';
+        Array.prototype.forEach.call(document.querySelectorAll('#liste-personnel [data-mdp]'), function (bt) {
+          bt.addEventListener('click', function () { nouveauMotDePasse(bt.getAttribute('data-mdp')); });
+        });
       })
       .catch(function (e) {
         $('#liste-personnel').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
@@ -1467,15 +1474,41 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     if (!email || !nom || !prenom) {
       alerte('#msg-personnel', 'Adresse, nom et prénom sont attendus.'); return;
     }
-    var b = $('#btn-enroler'); b.disabled = true; b.textContent = 'Enrôlement…';
-    appeler('lms', 'enroler_personnel', {
+    var b = $('#btn-enroler'); b.disabled = true; b.textContent = 'Création…';
+    $('#resultat-personnel').innerHTML = '';
+    appeler('lms', 'creer_compte_personnel', {
       p_email: email, p_nom: nom, p_prenom: prenom, p_role: $('#p-role').value
-    }).then(function () {
-      alerte('#msg-personnel', nom + ' ' + prenom + ' enrôlé comme ' + $('#p-role').value + '.', 'ok');
+    }).then(function (lignes) {
+      var l = (lignes && lignes[0]) || {};
+      alerte('#msg-personnel', nom + ' ' + prenom + ' : ' + (l.resultat || 'enrôlé') + '.', 'ok');
+      $('#resultat-personnel').innerHTML = afficherSecret(l.compte || email, l.mot_de_passe);
       $('#p-email').value = ''; $('#p-nom').value = ''; $('#p-prenom').value = '';
       return chargerPersonnel();
     }).catch(function (e) { alerte('#msg-personnel', e.message); })
-      .then(function () { b.disabled = false; b.textContent = 'Enrôler'; });
+      .then(function () { b.disabled = false; b.textContent = 'Créer le compte et enrôler'; });
+  }
+
+  /* Le mot de passe ne s'affiche qu'une fois : il n'est stocké nulle part
+     en clair. Sans mot de passe (compte existant), rien n'est montré. */
+  function afficherSecret(compte, mdp) {
+    if (!mdp) return '';
+    return '<table style="margin-top:.8rem"><tr><th>Adresse de connexion</th><th>Mot de passe</th></tr>' +
+           '<tr><td>' + echappe(compte) + '</td><td class="secret">' + echappe(mdp) + '</td></tr></table>' +
+           '<p class="muted">Notez-le maintenant : il ne sera plus affiché. ' +
+           'Adresse de connexion : thle2.github.io/espace-formation</p>';
+  }
+
+  function nouveauMotDePasse(email) {
+    if (!window.confirm('Donner un nouveau mot de passe à ' + email + ' ?\n\n' +
+                        "L'ancien ne fonctionnera plus.")) return;
+    appeler('lms', 'reinitialiser_mot_de_passe_personnel', { p_email: email })
+      .then(function (lignes) {
+        var l = (lignes && lignes[0]) || {};
+        alerte('#msg-personnel', 'Nouveau mot de passe pour ' + email + '.', 'ok');
+        $('#resultat-personnel').innerHTML = afficherSecret(l.compte || email, l.mot_de_passe);
+        $('#resultat-personnel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      })
+      .catch(function (e) { alerte('#msg-personnel', e.message); });
   }
 
   function inscrire() {
