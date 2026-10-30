@@ -4,1462 +4,253 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Espace de formation — TMK Performances</title>
+<title>Accompagna — Connexion</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%238C1E70'/%3E%3Cpath d='M7 12l3.5 3.5 6.5-7' stroke='%23fff' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 :root{
   --prune:#8C1E70; --prune-fonce:#5E1349; --prune-clair:#F4E6EE; --rose:#C77BAA;
   --vert:#283C28; --gris:#3C3C3C; --gris-moyen:#8A7A85; --trame:#E8DCE5;
-  --fond:#FAF6F8; --blanc:#FFFFFF;
-  --ok:#2E6B4F; --alerte:#A32020;
+  --fond:#FAF6F8; --blanc:#FFFFFF; --alerte:#A32020;
   --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --rail:2px;
 }
 *{box-sizing:border-box}
-/* Doit primer sur toute règle de mise en page : sans cela, un élément
-   porteur de display:grid reste visible malgré l'attribut hidden. */
 [hidden]{display:none !important}
 html,body{margin:0;padding:0}
-body{
-  font-family:var(--sans); color:var(--gris); background:var(--fond);
-  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3{color:var(--vert); font-weight:600; letter-spacing:-.02em; margin:0}
-a{color:var(--prune)}
-:focus-visible{outline:3px solid var(--rose); outline-offset:2px; border-radius:3px}
-.eyebrow{
-  font-size:.7rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--prune); margin:0 0 .5rem
-}
-.muted{color:var(--gris-moyen)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body{font-family:var(--sans);color:var(--gris);background:var(--fond);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+:focus-visible{outline:3px solid var(--rose);outline-offset:2px;border-radius:3px}
+h1,h2{color:var(--vert);font-weight:600;letter-spacing:-.02em;margin:0}
 
-/* ---------- Marque ---------- */
-.marque{font-weight:700; letter-spacing:-.03em; font-size:1.15rem; line-height:1}
-.marque .tmk{color:var(--vert)}
-.marque .perf{color:var(--gris-moyen); font-weight:500}
-.marque .swoosh{
-  display:inline-block; width:26px; height:13px; margin-right:.5rem; vertical-align:-2px;
-  border:3px solid var(--prune); border-bottom:none; border-radius:26px 26px 0 0;
-  border-right-color:var(--rose);
-}
+.logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.logo .mot{font-size:1.9rem;font-weight:700;letter-spacing:-.03em;color:var(--vert);line-height:1}
 
-/* ---------- Boutons ---------- */
-button{font:inherit}
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
-  background:var(--prune); color:#fff; border:1px solid var(--prune);
-  padding:.75rem 1.4rem; border-radius:2px; cursor:pointer; font-weight:600;
-  letter-spacing:.01em; transition:background .15s ease, transform .15s ease;
-}
-.btn:hover:not(:disabled){background:var(--prune-fonce); border-color:var(--prune-fonce)}
-.btn:active:not(:disabled){transform:translateY(1px)}
-.btn:disabled{background:var(--trame); border-color:var(--trame); color:var(--gris-moyen); cursor:not-allowed}
-.btn-clair{background:transparent; color:var(--prune)}
-.btn-clair:hover:not(:disabled){background:var(--prune-clair); border-color:var(--prune)}
-.btn-lien{background:none;border:none;color:var(--prune);cursor:pointer;padding:0;font-weight:600;text-decoration:underline}
+main{flex:1;display:grid;place-items:center;padding:1.5rem 1rem}
+.carte{width:100%;max-width:27rem;background:var(--blanc);border:1px solid var(--trame);
+  border-top:3px solid var(--prune);padding:2.4rem 2rem 2rem}
+.carte.large{max-width:46rem}
+.carte .logo{margin-bottom:2rem}
+.eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--prune);margin:0 0 .4rem}
+.champ{margin-bottom:1.1rem}
+.champ label{display:block;font-size:.82rem;font-weight:600;color:var(--vert);margin-bottom:.35rem}
+.champ input{width:100%;padding:.7rem .8rem;border:1px solid var(--trame);border-radius:2px;
+  font:inherit;color:var(--gris);background:var(--blanc)}
+.champ input:focus{border-color:var(--prune);outline:none;box-shadow:0 0 0 3px var(--prune-clair)}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;background:var(--prune);color:#fff;
+  border:1px solid var(--prune);padding:.75rem 1.4rem;border-radius:2px;cursor:pointer;font:inherit;font-weight:600}
+.btn:hover:not(:disabled){background:var(--prune-fonce);border-color:var(--prune-fonce)}
+.btn:disabled{background:var(--trame);border-color:var(--trame);color:var(--gris-moyen);cursor:not-allowed}
+.message{padding:.7rem .85rem;border-left:3px solid var(--alerte);background:#FCF2F2;color:var(--alerte);
+  font-size:.9rem;margin-bottom:1.1rem}
+.aide{font-size:.85rem;color:var(--gris-moyen);margin:1.5rem 0 0;line-height:1.5}
+.attente{color:var(--gris-moyen);text-align:center}
 
-/* ---------- Connexion ---------- */
-.ecran-connexion{min-height:100vh; display:grid; place-items:center; padding:1.5rem}
-.carte-connexion{
-  width:100%; max-width:26rem; background:var(--blanc);
-  border:1px solid var(--trame); border-top:3px solid var(--prune); padding:2.5rem 2rem;
-}
-.carte-connexion .marque{margin-bottom:2rem; display:block}
-.champ{margin-bottom:1.15rem}
-.champ label{display:block; font-size:.82rem; font-weight:600; color:var(--vert); margin-bottom:.35rem}
-.champ input{
-  width:100%; padding:.7rem .8rem; border:1px solid var(--trame); border-radius:2px;
-  font:inherit; color:var(--gris); background:var(--blanc);
-}
-.champ input:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var(--prune-clair)}
-.aide{font-size:.85rem; color:var(--gris-moyen); margin-top:1.5rem; line-height:1.5}
-.message{
-  padding:.7rem .85rem; border-left:3px solid var(--alerte); background:#FCF2F2;
-  color:var(--alerte); font-size:.9rem; margin-bottom:1.15rem;
-}
-.message[hidden]{display:none}
+/* ---------- Choix de l'espace (personnel) ---------- */
+.espaces{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:1rem;margin-top:1.6rem}
+.espace{display:block;text-decoration:none;color:inherit;background:var(--blanc);border:1px solid var(--trame);
+  border-top:3px solid var(--prune);padding:1.3rem 1.2rem 1.2rem;transition:border-color .15s ease, box-shadow .15s ease}
+.espace:hover{border-color:var(--prune);box-shadow:0 4px 14px rgba(94,19,73,.10)}
+.espace .num{font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rose)}
+.espace h2{font-size:1.15rem;margin:.35rem 0 .35rem;color:var(--prune-fonce)}
+.espace p{margin:0;font-size:.88rem;color:var(--gris-moyen);line-height:1.5}
+.espace.apercu{border-top-color:var(--rose)}
+.pied-choix{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem;
+  margin-top:1.6rem;font-size:.86rem;color:var(--gris-moyen)}
+.lien{background:none;border:0;color:var(--prune);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
 
-/* ---------- En-tête applicative ---------- */
-.bandeau{
-  background:var(--prune-fonce); color:#fff; padding:.85rem 1.5rem;
-  display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
-}
-.bandeau .marque .tmk,.bandeau .marque .perf{color:#fff}
-.bandeau .marque .swoosh{border-color:var(--rose); border-bottom:none; border-right-color:#fff}
-.bandeau .qui{font-size:.86rem; color:#E9D8E3; display:flex; align-items:center; gap:1rem}
-.bandeau button{color:#fff; text-decoration:underline; background:none; border:none; cursor:pointer; font-size:.86rem}
-main{max-width:62rem; margin:0 auto; padding:2.5rem 1.5rem 5rem}
-
-/* ---------- Liste des séances ---------- */
-.salut{font-size:1.6rem; margin-bottom:.25rem}
-.seance-jour{
-  background:var(--blanc); border:1px solid var(--trame); border-left:3px solid var(--prune);
-  padding:1.75rem; margin:1.75rem 0;
-}
-.seance-jour h2{font-size:1.45rem; margin-bottom:.4rem}
-.horaires{font-variant-numeric:tabular-nums; color:var(--gris-moyen); font-size:.9rem}
-.liste-seances{list-style:none; padding:0; margin:1rem 0 0}
-.liste-seances li{
-  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
-  padding:.85rem 0; border-bottom:1px solid var(--trame);
-}
-.liste-seances .date{font-variant-numeric:tabular-nums; color:var(--gris-moyen); font-size:.9rem; min-width:8rem}
-.vide{
-  background:var(--blanc); border:1px dashed var(--trame); padding:2.5rem 1.75rem; text-align:center;
-}
-
-/* ---------- Barre de la journée ---------- */
-.jour{margin:1.25rem 0 0}
-.jour-piste{position:relative; height:6px; background:var(--trame); border-radius:3px; overflow:hidden}
-.jour-seance{position:absolute; top:0; bottom:0; left:0; background:var(--rose); opacity:.55}
-.jour-marge{position:absolute; top:0; bottom:0; background:repeating-linear-gradient(
-   -45deg,var(--trame),var(--trame) 3px,var(--prune-clair) 3px,var(--prune-clair) 6px)}
-.jour-curseur{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--prune-fonce)}
-.jour-legende{
-  display:flex; justify-content:space-between; font-size:.74rem; color:var(--gris-moyen);
-  font-variant-numeric:tabular-nums; margin-top:.4rem;
-}
-
-/* ---------- La séance : rail + contenu ---------- */
-.seance{display:grid; grid-template-columns:16rem 1fr; gap:2.5rem; align-items:start}
-@media (max-width:820px){.seance{grid-template-columns:1fr; gap:1.5rem}}
-
-.fil{list-style:none; margin:0; padding:0; position:relative}
-.fil::before{
-  content:""; position:absolute; left:11px; top:14px; bottom:14px;
-  width:var(--rail); background:var(--trame);
-}
-.fil-fait{position:absolute; left:11px; top:14px; width:var(--rail); background:var(--prune); transition:height .4s ease}
-.etape{position:relative; padding:0 0 1.4rem 2.5rem; cursor:default}
-.etape:last-child{padding-bottom:0}
-.puce{
-  position:absolute; left:0; top:0; width:24px; height:24px; border-radius:50%;
-  background:var(--blanc); border:var(--rail) solid var(--trame);
-  display:grid; place-items:center; font-size:.7rem; font-weight:700; color:var(--gris-moyen);
-  font-variant-numeric:tabular-nums;
-}
-.etape-titre{font-weight:600; color:var(--vert); font-size:.95rem; line-height:1.35}
-.etape-type{font-size:.74rem; color:var(--gris-moyen); text-transform:uppercase; letter-spacing:.08em}
-
-.etape.faite .puce{background:var(--prune); border-color:var(--prune); color:#fff}
-.etape.faite .etape-titre{color:var(--gris-moyen)}
-.etape.courante .puce{
-  border-color:var(--prune); color:var(--prune); background:var(--prune-clair);
-  box-shadow:0 0 0 5px rgba(140,30,112,.12);
-}
-.etape.courante .etape-titre{color:var(--prune-fonce)}
-.etape.verrouillee .puce{
-  background:repeating-linear-gradient(-45deg,#fff,#fff 3px,var(--trame) 3px,var(--trame) 5px);
-  color:transparent;
-}
-.etape.verrouillee .etape-titre,.etape.verrouillee .etape-type{color:#B9AFB5}
-
-.panneau{background:var(--blanc); border:1px solid var(--trame); padding:2rem}
-/* Sur un ecran large, le panneau reste visible pendant qu'on parcourt
-   les 35 etapes. En dessous, les colonnes s'empilent : le figer
-   masquerait la liste. */
-@media (min-width:821px){
-  .panneau{position:sticky; top:1.5rem; max-height:calc(100vh - 3rem); overflow-y:scroll}
-}
-.panneau h2{font-size:1.35rem; margin-bottom:.15rem}
-.panneau-tete{border-bottom:1px solid var(--trame); padding-bottom:1.25rem; margin-bottom:1.5rem}
-.actions{margin-top:1.75rem; display:flex; gap:.75rem; flex-wrap:wrap; align-items:center}
-
-/* ---------- Lecteur vidéo ---------- */
-video{width:100%; display:block; background:#000}
-.vu{margin-top:.6rem}
-.vu-piste{position:relative; height:8px; background:var(--trame); border-radius:4px; overflow:hidden}
-.vu-part{position:absolute; top:0; bottom:0; left:0; background:var(--prune); transition:width .3s ease}
-.vu-tete{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--vert)}
-.vu-txt{display:flex; justify-content:space-between; font-size:.78rem; color:var(--gris-moyen); margin-top:.35rem}
-.note{
-  background:var(--prune-clair); border-left:3px solid var(--prune); padding:.75rem .9rem;
-  font-size:.88rem; color:var(--prune-fonce); margin-top:1rem;
-}
-.note[hidden]{display:none}
-
-/* ---------- QCM ---------- */
-.question{border-bottom:1px solid var(--trame); padding:1.5rem 0}
-.question:first-of-type{padding-top:0}
-.question-num{font-size:.72rem; font-weight:700; letter-spacing:.12em; color:var(--rose); text-transform:uppercase}
-.question-enonce{font-weight:600; color:var(--vert); margin:.35rem 0 1rem; font-size:1.02rem}
-/* Les e-mails reproduits, listes et blocs signature gardent leurs retours à la ligne. */
-.question-enonce, .prop span, .corrige .muted, .corrige .texte-stagiaire{white-space:pre-line}
-.support-video{margin-top:1.4rem; padding-top:1rem; border-top:1px solid var(--trame)}
-.corrige .texte-stagiaire{display:block; margin:.5rem 0; padding:.6rem .8rem; background:var(--fond); border-left:3px solid var(--trame)}
-.prop{display:flex; gap:.7rem; align-items:flex-start; padding:.5rem .7rem; border-radius:2px; cursor:pointer}
-.prop:hover{background:var(--fond)}
-.prop input{margin:.35rem 0 0; accent-color:var(--prune); flex:none}
-textarea{
-  width:100%; min-height:8rem; padding:.75rem; border:1px solid var(--trame);
-  font:inherit; color:var(--gris); border-radius:2px; resize:vertical;
-}
-textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var(--prune-clair)}
-
-.resultat{border:1px solid var(--trame); border-top:3px solid var(--prune); padding:1.5rem; margin-top:1.5rem}
-.score{font-size:2.4rem; font-weight:300; color:var(--prune-fonce); font-variant-numeric:tabular-nums; line-height:1}
-.corrige{list-style:none; padding:0; margin:1.25rem 0 0}
-.corrige li{padding:.6rem 0 .6rem .9rem; border-left:3px solid var(--trame); margin-bottom:.5rem; font-size:.9rem}
-.corrige li.juste{border-left-color:var(--ok)}
-.corrige li.faux{border-left-color:var(--alerte)}
-
-.chargement{text-align:center; padding:4rem 1rem; color:var(--gris-moyen)}
-@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
-
-    .atelier { margin: 1.6rem 0 .9rem; padding: .9rem 1.1rem; background: var(--prune-clair, #F4E6EE);
-               border-left: 4px solid var(--prune, #8C1E70); border-radius: 0 8px 8px 0; }
-    .atelier .eyebrow { margin: 0 0 .35rem; }
-    .atelier-consigne { margin: 0; font-size: .95rem; line-height: 1.55; white-space: pre-line; }
-
-    .facultative { display: inline-block; margin-left: .45rem; padding: .05rem .4rem;
-                   font-size: .68rem; font-weight: 600; letter-spacing: .04em;
-                   text-transform: none; color: var(--gris-moyen, #8A7A85);
-                   border: 1px solid var(--filet, #E8DCE5); border-radius: 999px;
-                   vertical-align: middle; }
-
-    .doc-cadre { border: 1px solid var(--trame, #E8DCE5); border-radius: 8px; overflow: hidden;
-                 background: #FAF6F8; margin-bottom: .7rem; }
-    .doc-cadre iframe { display: block; width: 100%; height: 68vh; min-height: 420px; border: 0; }
-    @media (max-width:820px){ .doc-cadre iframe { height: 58vh; min-height: 320px; } }
-    .doc-liens { font-size: .9rem; margin: 0 0 .6rem; }
-  /* --- Grille de mots croisés (rendu déclaré par regle.rendu) --- */
-    .grille-enveloppe { overflow-x: auto; margin: 1rem 0; }
-    table.grille { border-collapse: collapse; margin: 0 auto; }
-    table.grille td { width: 1.75rem; height: 1.75rem; padding: 0; }
-    table.grille td.vide { border: 0; background: transparent; }
-    table.grille td.case {
-      position: relative; border: 1px solid var(--prune, #8C1E70); background: #fff;
-    }
-    table.grille td.case.doree { background: #FCF4DC; }
-    table.grille td.case .num {
-      position: absolute; top: 0; left: 1px; font-size: .55rem; line-height: 1;
-      color: var(--gris-moyen, #8A7A85); pointer-events: none;
-    }
-    table.grille td.case input {
-      width: 100%; height: 100%; border: 0; background: transparent; text-align: center;
-      font-size: .95rem; font-weight: 700; text-transform: uppercase;
-      color: var(--prune-fonce, #5E1349); padding: 0; font-family: inherit;
-    }
-    table.grille td.case input:focus { outline: 2px solid var(--prune, #8C1E70); outline-offset: -2px; }
-
-    .definitions { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: .5rem; }
-    .definitions > div { flex: 1 1 18rem; min-width: 16rem; }
-    .definitions ul { list-style: none; margin: .3rem 0 0; padding: 0; }
-    .definitions li {
-      font-size: .87rem; padding: .25rem .3rem; border-radius: 4px; cursor: pointer;
-    }
-    .definitions li:hover { background: var(--prune-clair, #F4E6EE); }
-
-    /* Verdict : « acquis » n'appartient qu'aux étapes évaluées. Une étape
-       d'entraînement affiche la phrase qu'elle porte, ou rien. */
-    .verdict { margin:.4rem 0 0; font-weight:600 }
-    .verdict.ok { color:var(--vert) }
-    .verdict.ko { color:var(--prune) }
-
-  /* --- Dossier documentaire d'un cas pratique (panneau latéral) --- */
-    .dossier { position: fixed; top: 0; right: 0; bottom: 0; width: min(50vw, 820px); z-index: 50;
-               display: flex; flex-direction: column; background: #fff;
-               border-left: 3px solid var(--prune, #8C1E70); box-shadow: -6px 0 18px rgba(0,0,0,.12); }
-    .dossier[hidden] { display: none; }
-    .dossier-tete { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-                    padding: .55rem 1rem; background: var(--prune-fonce, #5E1349); color: #fff; font-size: .9rem; }
-    .dossier-tete a { color: #F4E6EE; margin-right: .9rem; }
-    .dossier-tete button { font: inherit; font-size: .85rem; cursor: pointer; background: transparent;
-                           color: #fff; border: 1px solid rgba(255,255,255,.6); border-radius: 4px; padding: .2rem .7rem; }
-    .dossier iframe { flex: 1; width: 100%; border: 0; }
-    .btn-dossier { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 49; cursor: pointer;
-                   font: inherit; font-weight: 600; color: #fff; background: var(--prune, #8C1E70);
-                   border: 0; border-radius: 999px; padding: .7rem 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-    .btn-dossier[hidden] { display: none; }
-    body.avec-dossier main { max-width: none; margin: 0; padding-right: calc(min(50vw, 820px) + 1.5rem); }
-    body.avec-dossier .seance { grid-template-columns: 1fr; }
-    body.avec-dossier #fil { display: none; }
-    @media (max-width: 1099px) {
-      .dossier { width: 100vw; border-left: 0; }
-      body.avec-dossier main { padding-right: 1.5rem; }
-    }
-  /* --- Réponses rédigées : compteur et collage désactivé --- */
-    .compteur { font-size: .8rem; color: var(--gris-moyen, #8A7A85); margin: .3rem 0 0; text-align: right; }
-    .compteur.refus { color: var(--alerte, #B3261E); font-weight: 600; }
+footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1rem 1.6rem}
 </style>
 </head>
 <body>
 
-<!-- ============ CONNEXION ============ -->
-<section id="vue-connexion" class="ecran-connexion">
-  <form class="carte-connexion" id="form-connexion" autocomplete="on">
-    <span class="marque"><span class="swoosh"></span><span class="tmk">TMK</span> <span class="perf">Performances</span></span>
-    <p class="eyebrow">Espace de formation</p>
-    <h1 style="font-size:1.4rem;margin-bottom:1.75rem">Connexion</h1>
+<main>
+  <!-- Attente : vérification d'une session déjà ouverte -->
+  <div id="vue-attente" class="attente">Ouverture…</div>
 
-    <div class="message" id="msg-connexion" hidden role="alert"></div>
+  <!-- Connexion unique -->
+  <form id="vue-connexion" class="carte" autocomplete="on" hidden>
+    <span class="logo" aria-label="Accompagna">
+      <svg width="54" height="44" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#8C1E70"/><circle cx="42" cy="14" r="10" fill="#8C1E70"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="mot">accompagna</span>
+    </span>
+    <p class="eyebrow">Espace de formation</p>
+    <h1 style="font-size:1.4rem;margin-bottom:1.6rem">Connexion</h1>
+
+    <div class="message" id="msg" hidden role="alert"></div>
 
     <div class="champ">
       <label for="email">Adresse de connexion</label>
-      <input type="email" id="email" name="email" autocomplete="username" required
-             placeholder="prenom.nom@…">
+      <input type="email" id="email" name="email" autocomplete="username" required placeholder="prenom.nom@…">
     </div>
     <div class="champ">
       <label for="mdp">Mot de passe</label>
       <input type="password" id="mdp" name="password" autocomplete="current-password" required>
     </div>
+    <button class="btn" type="submit" id="btn-connexion">Se connecter</button>
 
-    <button class="btn" style="width:100%" type="submit" id="btn-connexion">Se connecter</button>
-
-    <p class="aide">
-      Utilisez l'adresse et le mot de passe qui vous ont été communiqués.
+    <p class="aide">Utilisez l'adresse et le mot de passe qui vous ont été communiqués.
       Si le mot de passe ne fonctionne pas, contactez votre gestionnaire de formation :
-      il ne peut pas être réinitialisé depuis cette page.
-    </p>
+      il ne peut pas être réinitialisé depuis cette page.</p>
   </form>
-</section>
 
-<!-- ============ APPLICATION ============ -->
-<div id="app" hidden>
-  <div id="ruban-demo" hidden style="background:#5E1349;color:#F4E6EE;text-align:center;padding:.4rem;font-size:.8rem;letter-spacing:.04em">
-    Aperçu — données fictives, rien n'est enregistré
-  </div>
-  <header class="bandeau">
-    <span class="marque"><span class="swoosh"></span><span class="tmk">TMK</span> <span class="perf">Performances</span></span>
-    <span class="qui"><span id="qui-nom"></span><button type="button" id="btn-deconnexion">Se déconnecter</button></span>
-  </header>
-  <main>
-    <div id="vue-seances"></div>
-    <div id="vue-seance" hidden></div>
-  </main>
-</div>
+  <!-- Session déjà ouverte sur ce poste : continuer ou changer de compte -->
+  <section id="vue-reprise" class="carte" hidden>
+    <span class="logo" aria-label="Accompagna">
+      <svg width="54" height="44" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#8C1E70"/><circle cx="42" cy="14" r="10" fill="#8C1E70"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="mot">accompagna</span>
+    </span>
+    <p class="eyebrow">Espace de formation</p>
+    <h1 style="font-size:1.4rem;margin-bottom:.8rem">Une session est déjà ouverte</h1>
+    <p style="margin:0 0 1.6rem">Ce poste est connecté avec le compte<br><strong id="reprise-mail"></strong></p>
+    <button type="button" class="btn" id="btn-continuer">Continuer avec ce compte</button>
+    <p style="text-align:center;margin:1.1rem 0 0"><button type="button" class="lien" id="btn-changer">Ce n'est pas moi : changer de compte</button></p>
+  </section>
+
+  <!-- Choix de l'espace, pour le personnel uniquement -->
+  <section id="vue-choix" class="carte large" hidden>
+    <span class="logo" aria-label="Accompagna">
+      <svg width="54" height="44" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#8C1E70"/><circle cx="42" cy="14" r="10" fill="#8C1E70"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="mot">accompagna</span>
+    </span>
+    <p class="eyebrow">Bonjour <span id="qui"></span></p>
+    <h1 style="font-size:1.4rem">Choisissez votre espace</h1>
+
+    <div class="espaces">
+      <a class="espace" id="tuile-admin" href="admin.html?espace=administration">
+        <span class="num">Administration</span>
+        <h2>Gérer l'organisme</h2>
+        <p>Séances, groupes, stagiaires, comptes du personnel, résultats et copies.</p>
+      </a>
+      <a class="espace" href="admin.html?espace=formateurs">
+        <span class="num">Formateurs</span>
+        <h2>Suivre mes groupes</h2>
+        <p>Séances, résultats par stagiaire et correction des copies.</p>
+      </a>
+      <a class="espace apercu" href="portail.html?demo">
+        <span class="num">Stagiaires</span>
+        <h2>Voir le portail</h2>
+        <p>L'écran du stagiaire, avec des données fictives. Rien n'est enregistré.</p>
+      </a>
+    </div>
+
+    <div class="pied-choix">
+      <span>Connecté en tant que <strong id="qui-mail"></strong></span>
+      <button type="button" class="lien" id="btn-sortir">Se déconnecter</button>
+    </div>
+  </section>
+</main>
+
+<footer>Accès réservé aux stagiaires et au personnel de l'organisme de formation.</footer>
 
 <script src="config.js"></script>
-<script src="demo.js"></script>
 <script src="vendor/supabase.js"></script>
 <script>
 (function () {
   "use strict";
-
-  /* ------------------------------------------------------------------ *
-   * Mise en place
-   * ------------------------------------------------------------------ */
-  var APERCU = /[?&]demo\b/.test(location.search);
-  // Deux écritures acceptées dans config.js : l'objet LMS_CONFIG, ou les
-  // constantes SUPABASE_URL / SUPABASE_KEY employées dans les outils existants.
+  var $ = function (s) { return document.querySelector(s); };
   var CFG = window.LMS_CONFIG || {};
   if (!CFG.SUPABASE_URL && typeof SUPABASE_URL !== 'undefined') CFG.SUPABASE_URL = SUPABASE_URL;
-  if (!CFG.SUPABASE_ANON_KEY) {
-    if (typeof SUPABASE_KEY !== 'undefined')      CFG.SUPABASE_ANON_KEY = SUPABASE_KEY;
-    else if (typeof SUPABASE_ANON_KEY !== 'undefined') CFG.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
+  if (!CFG.SUPABASE_ANON_KEY && typeof SUPABASE_KEY !== 'undefined') CFG.SUPABASE_ANON_KEY = SUPABASE_KEY;
+
+  if (!window.supabase || !CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) {
+    $('#vue-attente').innerHTML = '<strong>Configuration incomplète.</strong> Vérifiez config.js et vendor/supabase.js.';
+    return;
   }
-  if (!APERCU && (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY || /xxxx/.test(CFG.SUPABASE_URL))) {
-    document.body.innerHTML =
-      '<div class="chargement"><p><strong>Configuration incomplète.</strong></p>' +
-      '<p>Renseignez l\'adresse du projet et la clé anon dans <code>config.js</code>.</p>' +
-      '<p class="muted">Pour voir l\'interface sans rien configurer, ouvrez cette page avec ' +
-      '<code>?demo</code> à la fin de l\'adresse.</p></div>';
+  if (/^sb_secret_|service_role/.test(String(CFG.SUPABASE_ANON_KEY))) {
+    $('#vue-attente').innerHTML = "<strong>Clé secrète détectée dans config.js.</strong> Elle ne doit jamais être publiée : utilisez la clé publishable.";
     return;
   }
 
-  if (!APERCU && /^sb_secret_|service_role/.test(String(CFG.SUPABASE_ANON_KEY))) {
-    document.body.innerHTML =
-      '<div class="chargement"><p><strong>Clé incorrecte dans config.js.</strong></p>' +
-      '<p>C\'est une clé secrète. Elle contourne toutes les règles d\'accès et ne doit jamais ' +
-      'figurer dans une page publiée. Utilisez la clé <em>publishable</em> ' +
-      '(<code>sb_publishable_…</code>).</p></div>';
-    return;
+  /* La session ne vit que dans l'onglet (sessionStorage) : fermer l'onglet
+     ou le navigateur déconnecte, ce qu'exigent les postes de salle partagés.
+     Les anciennes sessions conservées durablement sont effacées. */
+  try { Object.keys(localStorage).forEach(function (k) { if (/^sb-.*-auth-token/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+  var OPTIONS_AUTH = { auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true } };
+  var db = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, OPTIONS_AUTH);
+
+  /* Après connexion, retour éventuel vers la page qui a demandé
+     l'identification. Seules nos deux pages sont acceptées. */
+  function retourDemande() {
+    var m = /[?&]retour=([^&]+)/.exec(location.search);
+    if (!m) return null;
+    var r = decodeURIComponent(m[1]);
+    return /^(admin|portail)\.html(\?[\w=&%.-]*)?$/.test(r) ? r : null;
   }
 
-  var db = APERCU ? window.LMS_CLIENT_DEMO()
-                  : window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
-  var lms = function () { return db.schema('lms'); };
-  var contenu = function () { return db.schema('contenu'); };
-  var evalu = function () { return db.schema('eval'); };
-
-  var $ = function (s) { return document.querySelector(s); };
-  var etat = { stagiaire: null, seances: [], seance: null, etapes: [], progressions: [], courante: null };
-
-  var JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-  var MOIS  = ['janvier','février','mars','avril','mai','juin','juillet','août',
-               'septembre','octobre','novembre','décembre'];
-
-  function echappe(t) {
-    return String(t == null ? '' : t)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
-  function dateLongue(iso) {
-    var d = new Date(iso + 'T12:00:00');
-    var s = JOURS[d.getDay()] + ' ' + d.getDate() + ' ' + MOIS[d.getMonth()];
-    /* L'annee n'est affichee que si elle differe de l'annee en cours :
-       sans elle, une seance a cheval sur deux annees se lit de travers. */
-    if (d.getFullYear() !== new Date().getFullYear()) s += ' ' + d.getFullYear();
-    return s;
-  }
-  function hhmm(t) { return String(t || '').slice(0, 5).replace(':', 'h'); }
-  function minutes(t) {
-    var p = String(t || '00:00').split(':');
-    return (+p[0]) * 60 + (+p[1]);
-  }
-  function aujourdhui() {
-    var d = new Date(), z = function (n) { return (n < 10 ? '0' : '') + n; };
-    return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
-  }
-  function libelleType(t) {
-    return ({ video:'Capsule vidéo', lecture:'Lecture', document:'Document',
-              exercice:'Exercice', qcm:'Questionnaire', cas_pratique:'Cas pratique' })[t] || t;
+  function montrer(id) {
+    ['#vue-attente', '#vue-connexion', '#vue-reprise', '#vue-choix'].forEach(function (v) { $(v).hidden = (v !== id); });
   }
 
-  /* ------------------------------------------------------------------ *
-   * Connexion
-   * ------------------------------------------------------------------ */
-  $('#form-connexion').addEventListener('submit', function (e) {
+  /* L'aiguillage : la base dit qui est du personnel et qui gère.
+     Tout autre compte est orienté vers le portail stagiaire. */
+  function aiguiller(session, depuisConnexion) {
+    var lms = db.schema('lms');
+    return lms.rpc('est_personnel').then(function (r) {
+      if (r.error) throw r.error;
+      if (r.data !== true) {
+        var ret = retourDemande();
+        location.replace(ret && /^portail/.test(ret) ? ret : 'portail.html');
+        return;
+      }
+      return lms.rpc('est_gestionnaire').then(function (g) {
+        var gestionnaire = (g.data === true);
+        var ret = retourDemande();
+        /* Le personnel ne repart que vers l'administration : un retour vers
+           le portail (laissé par une session stagiaire précédente) est ignoré. */
+        if (ret && depuisConnexion && /^admin\.html/.test(ret) && (gestionnaire || !/administration/.test(ret))) {
+          location.replace(ret); return;
+        }
+        $('#tuile-admin').hidden = !gestionnaire;
+        $('#qui-mail').textContent = (session.user && session.user.email) || '';
+        return lms.from('formateurs').select('prenom').eq('user_id', session.user.id).limit(1)
+          .then(function (f) {
+            $('#qui').textContent = (f.data && f.data[0] && f.data[0].prenom) || '';
+            montrer('#vue-choix');
+          });
+      });
+    });
+  }
+
+  $('#vue-connexion').addEventListener('submit', function (e) {
     e.preventDefault();
-    var bouton = $('#btn-connexion'), msg = $('#msg-connexion');
-    msg.hidden = true;
-    bouton.disabled = true;
-    bouton.textContent = 'Connexion…';
-
-    db.auth.signInWithPassword({
-      email: $('#email').value.trim(),
-      password: $('#mdp').value
-    }).then(function (r) {
-      if (r.error) {
-        msg.textContent = /Invalid login/i.test(r.error.message)
+    var b = $('#btn-connexion'), msg = $('#msg');
+    msg.hidden = true; b.disabled = true; b.textContent = 'Connexion…';
+    db.auth.signInWithPassword({ email: $('#email').value.trim(), password: $('#mdp').value })
+      .then(function (r) {
+        if (r.error) throw r.error;
+        return aiguiller(r.data.session, true);
+      })
+      .catch(function (err) {
+        msg.textContent = /Invalid login/i.test(err.message || '')
           ? "Adresse ou mot de passe incorrect. Vérifiez la saisie, puis contactez votre gestionnaire de formation."
-          : "La connexion a échoué : " + r.error.message;
+          : "La connexion a échoué : " + (err.message || err);
         msg.hidden = false;
-        bouton.disabled = false;
-        bouton.textContent = 'Se connecter';
-        return;
-      }
-      bouton.disabled = false;
-      bouton.textContent = 'Se connecter';
-      demarrer();
-    });
+        b.disabled = false; b.textContent = 'Se connecter';
+      });
   });
 
-  $('#btn-deconnexion').addEventListener('click', function () {
-    db.auth.signOut().then(function () { location.reload(); });
+  $('#btn-sortir').addEventListener('click', function () {
+    db.auth.signOut().then(function () { location.replace('index.html'); });
   });
 
-  /* ------------------------------------------------------------------ *
-   * Chargement
-   * ------------------------------------------------------------------ */
-  function demarrer() {
-    $('#vue-connexion').hidden = true;
-    $('#app').hidden = false;
-    $('#vue-seances').innerHTML = '<div class="chargement">Chargement de vos séances…</div>';
-
-    /* On demande SA fiche, pas une fiche. Un membre du personnel voit
-       toutes les fiches : sans ce filtre, le portail affichait la
-       premiere venue et lui presentait le dossier d'un stagiaire. */
-    db.auth.getUser().then(function (u) {
-      var moi = u && u.data && u.data.user;
-      if (!moi) { seDeconnecter(); return; }
-
-      return lms().from('stagiaires')
-        .select('id,prenom,nom')
-        .eq('user_id', moi.id)
-        .limit(1)
-        .then(function (r) {
-          etat.stagiaire = (r.data && r.data[0]) || null;
-          if (!etat.stagiaire) {
-            $('#vue-seances').innerHTML =
-              '<div class="vide"><h2>Compte non rattaché</h2>' +
-              '<p class="muted">Votre connexion fonctionne, mais aucun dossier stagiaire ne lui est associé. ' +
-              'Si vous faites partie de l\'équipe TMK, cet espace est réservé aux stagiaires. ' +
-              'Sinon, signalez-le à votre gestionnaire de formation.</p></div>';
-            $('#qui-nom').textContent = moi.email || '';
-            return;
-          }
-          $('#qui-nom').textContent = etat.stagiaire.prenom + ' ' + etat.stagiaire.nom;
-          chargerSeances();
-        });
-    });
-  }
-
-  function chargerSeances() {
-    lms().from('sessions')
-      .select('id,libelle,da_id,date_debut,date_fin,heure_debut,heure_fin,heure_cloture,est_fenetre')
-      .order('date_debut', { ascending: true })
-      .then(function (r) {
-        etat.seances = r.data || [];
-        afficherSeances();
-      });
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Vue : mes séances
-   * ------------------------------------------------------------------ */
-  function afficherSeances() {
-    retirerDossier();
-    var jour = aujourdhui();
-    var duJour = etat.seances.filter(function (s) { return s.date_debut <= jour && s.date_fin >= jour; });
-    var aVenir = etat.seances.filter(function (s) { return s.date_debut > jour; });
-    var h = '<p class="eyebrow">Votre parcours</p><h1 class="salut">Bonjour ' +
-            echappe(etat.stagiaire.prenom) + '</h1>';
-
-    if (duJour.length) {
-      duJour.forEach(function (s) {
-        h += '<article class="seance-jour">' +
-             '<p class="eyebrow">' + (s.est_fenetre ? 'Ouvert jusqu\'au ' + dateLongue(s.date_fin) : 'Aujourd\'hui') + '</p>' +
-             '<h2>' + echappe(s.libelle) + '</h2>' +
-             '<p class="horaires">' + hhmm(s.heure_debut) + ' – ' + hhmm(s.heure_fin) +
-             '<span class="muted"> · vous pouvez terminer jusqu\'à ' + hhmm(s.heure_cloture) + '</span></p>' +
-             barreJour(s) +
-             '<div class="actions"><button class="btn" data-ouvrir="' + s.id + '">Ouvrir la séance</button></div>' +
-             '</article>';
-      });
-    } else {
-      h += '<div class="vide"><h2>Aucune séance aujourd\'hui</h2>' +
-           '<p class="muted">' + (aVenir.length
-              ? 'La prochaine est le ' + dateLongue(aVenir[0].date_debut) + '.'
-              : 'Aucune séance n\'est programmée pour le moment.') + '</p></div>';
-    }
-
-    if (aVenir.length) {
-      h += '<h2 style="font-size:1.05rem;margin-top:2.5rem">À venir</h2><ul class="liste-seances">';
-      aVenir.forEach(function (s) {
-        h += '<li><span class="date">' + dateLongue(s.date_debut) + '</span>' +
-             '<span style="flex:1">' + echappe(s.libelle) + '</span>' +
-             '<span class="horaires">' + hhmm(s.heure_debut) + '</span></li>';
-      });
-      h += '</ul>';
-    }
-
-    $('#vue-seances').innerHTML = h;
-    $('#vue-seances').hidden = false;
-    $('#vue-seance').hidden = true;
-    Array.prototype.forEach.call(document.querySelectorAll('[data-ouvrir]'), function (b) {
-      b.addEventListener('click', function () { ouvrirSeance(+b.dataset.ouvrir); });
-    });
-  }
-
-  // La journée est uniforme : 08h30–16h30, deux heures de marge jusqu'à 18h30.
-  function barreJour(s) {
-    if (s.est_fenetre) return '';
-    var d = minutes(s.heure_debut), f = minutes(s.heure_fin), c = minutes(s.heure_cloture);
-    var total = c - d;
-    if (total <= 0) return '';
-    var now = new Date();
-    var m = now.getHours() * 60 + now.getMinutes();
-    var pos = Math.max(0, Math.min(100, ((m - d) / total) * 100));
-    var seance = ((f - d) / total) * 100;
-    return '<div class="jour"><div class="jour-piste">' +
-           '<div class="jour-seance" style="width:' + seance.toFixed(1) + '%"></div>' +
-           '<div class="jour-marge" style="left:' + seance.toFixed(1) + '%;right:0"></div>' +
-           (m >= d && m <= c ? '<div class="jour-curseur" style="left:' + pos.toFixed(1) + '%"></div>' : '') +
-           '</div><div class="jour-legende"><span>' + hhmm(s.heure_debut) + '</span>' +
-           '<span>fin de séance ' + hhmm(s.heure_fin) + '</span>' +
-           '<span>' + hhmm(s.heure_cloture) + '</span></div></div>';
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Vue : la séance
-   * ------------------------------------------------------------------ */
-  function ouvrirSeance(id) {
-    etat.seance = etat.seances.filter(function (s) { return s.id === id; })[0];
-    $('#vue-seances').hidden = true;
-    $('#vue-seance').hidden = false;
-    $('#vue-seance').innerHTML = '<div class="chargement">Ouverture de la séance…</div>';
-
-    // La connexion vaut constat de présence : aucun code à saisir.
-    lms().rpc('enregistrer_connexion', { p_session_id: id }).then(function (r) {
-      if (r.error) {
-        $('#vue-seance').innerHTML =
-          '<div class="vide"><h2>Séance indisponible</h2><p class="muted">' +
-          echappe(r.error.message) + '</p>' +
-          '<div class="actions" style="justify-content:center"><button class="btn btn-clair" id="retour">Revenir à mes séances</button></div></div>';
-        $('#retour').addEventListener('click', afficherSeances);
-        return;
-      }
-      rafraichirSeance(true);
-    });
-  }
-
-  function rafraichirSeance(premier) {
-    Promise.all([
-      lms().rpc('etapes_de_la_seance', { p_session_id: etat.seance.id }),
-      lms().from('progressions')
-        .select('etape_id,statut,segments,duree_vue_s')
-        .eq('session_id', etat.seance.id)
-    ]).then(function (rs) {
-      etat.etapes = rs[0].data || [];
-      etat.progressions = rs[1].data || [];
-      if (premier) etat.courante = premiereOuverte();
-      dessinerSeance();
-    });
-  }
-
-  function progressionDe(etapeId) {
-    return etat.progressions.filter(function (p) { return p.etape_id === etapeId; })[0] || null;
-  }
-  function estValidee(etapeId) {
-    var p = progressionDe(etapeId);
-    return !!(p && p.statut === 'validee');
-  }
-  
-  // Une étape s'ouvre quand toutes les étapes bloquantes qui la précèdent sont validées.
-  // Le serveur applique la même règle : ceci n'est qu'un affichage honnête.
-  // On s'arrête sur l'étape elle-même, et non sur son rang : depuis que le
-  // parcours est découpé en séquences, `ordre` repart à 1 dans chacune et
-  // ne peut plus servir à comparer deux étapes du parcours.
-  
-  function estOuverte(etape) {
-    for (var i = 0; i < etat.etapes.length; i++) {
-      var e = etat.etapes[i];
-      if (e.id === etape.id) break;
-      if (e.bloquante && !estValidee(e.id)) return false;
-    }
-    return true;
-  }
-  
-  function premiereOuverte() {
-    for (var i = 0; i < etat.etapes.length; i++) {
-      if (!estValidee(etat.etapes[i].id) && estOuverte(etat.etapes[i])) return etat.etapes[i];
-    }
-    return etat.etapes[etat.etapes.length - 1] || null;
-  }
-
-  function dessinerSeance() {
-    var faites = etat.etapes.filter(function (e) { return estValidee(e.id); }).length;
-    var total = etat.etapes.length;
-    var h = '<button class="btn-lien" id="retour" style="margin-bottom:1.25rem">← Mes séances</button>' +
-            '<p class="eyebrow">' + dateLongue(etat.seance.date_debut) + '</p>' +
-            '<h1 style="font-size:1.7rem;margin-bottom:.35rem">' + echappe(etat.seance.libelle) + '</h1>' +
-            '<p class="horaires" style="margin:0 0 2rem">' + faites + ' étape' + (faites > 1 ? 's' : '') +
-            ' validée' + (faites > 1 ? 's' : '') + ' sur ' + total + '</p>' +
-            '<div class="seance"><ul class="fil" id="fil">';
-
-    var hauteurFaite = 0, indexDernierFait = -1;
-    etat.etapes.forEach(function (e, i) {
-      if (estValidee(e.id)) indexDernierFait = i;
-    });
-    hauteurFaite = indexDernierFait < 0 ? 0 : (indexDernierFait / Math.max(1, total - 1)) * 100;
-
-    h += '<div class="fil-fait" style="height:calc(' + hauteurFaite.toFixed(1) + '% - 0px)"></div>';
-
-    etat.etapes.forEach(function (e, i) {
-      var classe = estValidee(e.id) ? 'faite' : (estOuverte(e) ? '' : 'verrouillee');
-      if (etat.courante && e.id === etat.courante.id && classe !== 'faite') classe = 'courante';
-      var cliquable = estOuverte(e);
-      h += '<li class="etape ' + classe + '"' + (cliquable ? ' data-etape="' + e.id + '" style="cursor:pointer"' : '') +
-           ' role="listitem">' +
-           '<span class="puce" aria-hidden="true">' + (estValidee(e.id) ? '✓' : (i + 1)) + '</span>' +
-           '<span class="etape-type">' + libelleType(e.type) +
-           (e.bloquante === false ? '<span class="facultative">facultative</span>' : '') + '</span>' +
-           '<div class="etape-titre">' + echappe(e.titre) + '</div>' +
-           (cliquable ? '' : '<span class="sr">Étape verrouillée</span>') +
-           '</li>';
-    });
-
-    h += '</ul><div class="panneau" id="panneau"></div></div>';
-    $('#vue-seance').innerHTML = h;
-    $('#retour').addEventListener('click', afficherSeances);
-    Array.prototype.forEach.call(document.querySelectorAll('[data-etape]'), function (li) {
-      li.addEventListener('click', function () {
-        etat.courante = etat.etapes.filter(function (e) { return e.id === +li.dataset.etape; })[0];
-        dessinerSeance();
-        var pan = $('#panneau');
-        if (pan && pan.scrollIntoView && window.innerWidth <= 820) {
-          pan.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-    dessinerPanneau();
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Panneau de l'étape courante
-   * ------------------------------------------------------------------ */
-  /* --- Dossier documentaire d'un cas pratique ---
-     Une étape cas_pratique qui porte un media_url affiche ce document
-     dans un panneau latéral, à côté des questions : le stagiaire lit et
-     rédige au même endroit. Le panneau vit hors de #vue-seance, si bien
-     qu'un redessin de la séance ne recharge pas la page du dossier — le
-     chronomètre qu'elle porte continue de tourner. */
-  var dossierUrl = null;
-  function retirerDossier() {
-    ['dossier', 'btn-dossier'].forEach(function (id) {
-      var n = document.getElementById(id); if (n) n.parentNode.removeChild(n);
-    });
-    document.body.classList.remove('avec-dossier');
-    dossierUrl = null;
-  }
-  function poserDossier(e) {
-    var url = (e && e.type === 'cas_pratique' && e.media_url && estOuverte(e)) ? e.media_url : null;
-    if (!url) { retirerDossier(); return; }
-    if (url === dossierUrl) return;
-    retirerDossier();
-    dossierUrl = url;
-    var d = document.createElement('aside');
-    d.id = 'dossier'; d.className = 'dossier'; d.setAttribute('aria-label', 'Votre dossier');
-    d.innerHTML = '<div class="dossier-tete"><strong>Votre dossier</strong><span>' +
-      '<a href="' + echappe(url) + '" target="_blank" rel="noopener">Plein écran</a>' +
-      '<button type="button" id="dossier-masquer">Masquer</button></span></div>' +
-      '<iframe src="' + echappe(url) + '" title="Votre dossier"></iframe>';
-    var b = document.createElement('button');
-    b.type = 'button'; b.id = 'btn-dossier'; b.className = 'btn-dossier'; b.textContent = 'Afficher mon dossier';
-    document.body.appendChild(d); document.body.appendChild(b);
-    function basculer(ouvrir) {
-      d.hidden = !ouvrir; b.hidden = ouvrir;
-      document.body.classList.toggle('avec-dossier', ouvrir);
-    }
-    document.getElementById('dossier-masquer').addEventListener('click', function () { basculer(false); });
-    b.addEventListener('click', function () { basculer(true); });
-    basculer(window.innerWidth >= 1100);
-  }
-
-  function dessinerPanneau() {
-    var p = $('#panneau'), e = etat.courante;
-    poserDossier(e);
-    if (!e) { p.innerHTML = '<p class="muted">Cette séance ne contient aucune étape.</p>'; return; }
-
-    var tete = '<div class="panneau-tete"><p class="eyebrow">' + libelleType(e.type) + '</p>' +
-               '<h2>' + echappe(e.titre) + '</h2></div>';
-
-    if (!estOuverte(e)) {
-      p.innerHTML = tete + '<p class="muted">Terminez d\'abord l\'étape précédente pour ouvrir celle-ci.</p>';
-      return;
-    }
-
-    if (e.regle && e.regle.rendu === 'grille') return void panneauGrille(p, tete, e);
-    if (e.type === 'video')      return void panneauVideo(p, tete, e);
-    if (e.type === 'qcm')        return void panneauQcm(p, tete, e);
-    if (e.type === 'cas_pratique' || e.type === 'exercice') {
-      /* Porteur de questions : il se joue ici, corrige par le serveur.
-         Sans questions : redaction libre pour un cas, page a consulter
-         pour un exercice. */
-      contenu().from('questions').select('id', { count: 'exact', head: true })
-        .eq('etape_id', e.id)
-        .then(function (r) {
-          if (r.count > 0) panneauQcm(p, tete, e);
-          else if (e.type === 'cas_pratique') panneauCas(p, tete, e);
-          else panneauSimple(p, tete, e);
-        });
-      return;
-    }
-    panneauSimple(p, tete, e);
-  }
-
-  function boutonSuivant() {
-    var i = etat.etapes.indexOf(etat.courante);
-    if (i < 0 || i + 1 >= etat.etapes.length) return '';
-    return '<button class="btn" id="suivant">Étape suivante</button>';
-  }
-  function brancherSuivant() {
-    var b = $('#suivant');
-    if (!b) return;
-    b.addEventListener('click', function () {
-      var i = etat.etapes.indexOf(etat.courante);
-      etat.courante = etat.etapes[i + 1];
-      dessinerSeance();
-    });
-  }
-
-  /* --- Lecture, document, exercice --- */
-  /* Affichage d'un document : un PDF s'ouvre dans la page, les autres
-     formats gardent un lien. Employe par les deux etats du panneau,
-     etape validee ou non. */
-  /* Les pages HTML (fiches interactives, postes, corrections) s'affichent
-     elles aussi dans le portail : le stagiaire ne quitte plus le parcours.
-     Mettre false pour revenir au lien « Ouvrir le document ». */
-  var INTEGRER_HTML = true;
-  function estIntegre(url) {
-    return /\.pdf(\?|#|$)/i.test(url || '') || (INTEGRER_HTML && /\.html?(\?|#|$)/i.test(url || ''));
-  }
-  function blocDocument(url, titre) {
-    if (!url) return '';
-    if (INTEGRER_HTML && /\.html?(\?|#|$)/i.test(url)) {
-      return '<div class="doc-cadre"><iframe src="' + echappe(url) + '" title="' +
-             echappe(titre || 'Document') + '"></iframe></div>' +
-             '<p class="doc-liens"><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir en plein écran</a></p>';
-    }
-    if (/\.pdf(\?|$)/i.test(url)) {
-      return '<div class="doc-cadre"><iframe src="' + echappe(url) + '#view=FitH" title="' +
-             echappe(titre || 'Document') + '"></iframe></div>' +
-             '<p class="doc-liens"><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir en plein écran</a>' +
-             ' · <a href="' + echappe(url) + '" download>Télécharger</a></p>';
-    }
-    return '<p><a href="' + echappe(url) + '" target="_blank" rel="noopener" id="ouvrir">Ouvrir le document</a></p>';
-  }
-
-  function panneauSimple(p, tete, e) {
-    var fait = estValidee(e.id);
-    if (fait) {
-      p.innerHTML = tete + blocDocument(e.media_url, e.titre) +
-        '<div class="actions"><span class="muted">✓ Étape validée</span> ' + boutonSuivant() + '</div>';
-      brancherSuivant();
-      return;
-    }
-    if (!e.media_url) {
-      p.innerHTML = tete + '<p class="muted">Le contenu de cette étape n\'est pas encore en ligne. ' +
-        'Signalez-le à votre formateur.</p>';
-      return;
-    }
-
-    /* On ne demande pas au stagiaire de declarer qu'il a lu : on constate
-       qu'il a ouvert le document et qu'il y a passe un temps minimal.
-       C'est faible, mais c'est un constat plutot qu'une declaration.
-       Sur une etape facultative, ce constat ne retient personne : le
-       bouton de passage est offert d'emblee. */
-    var ATTENTE = 60;
-    var facultative = (e.bloquante === false);
-    /* Un PDF s'affiche dans la page : le stagiaire ne quitte pas le
-       parcours, et le decompte demarre a l'affichage plutot qu'a un
-       clic. Les autres formats gardent le lien classique. */
-    var estPdf = estIntegre(e.media_url);
-
-    p.innerHTML = tete + blocDocument(e.media_url, e.titre) +
-      '<p class="muted" id="consigne">' +
-      (facultative
-        ? 'Cette étape est facultative : consultez-la si vous le souhaitez, ou passez à la suivante.'
-        : (estPdf ? 'Prenez connaissance du document ci-dessus.'
-                  : 'Ouvrez le document pour pouvoir valider cette étape.')) + '</p>' +
-      '<div class="actions"><button class="btn" id="valider" disabled>J\'ai terminé cette étape</button>' +
-      (facultative ? ' ' + boutonSuivant() : '') + '</div>';
-    
-    if (facultative) brancherSuivant();
-
-    var b = $('#valider'), consigne = $('#consigne'), reste = ATTENTE, ouvert = false, tic = null;
-    function demarrer() {
-      if (ouvert) return;
-      ouvert = true;
-      tic = setInterval(function () {
-        reste--;
-        if (reste > 0) {
-          consigne.textContent = (facultative ? 'Étape facultative. ' : '')
-            + 'La validation s\'activera dans '
-            + reste + ' seconde' + (reste > 1 ? 's' : '') + '.';
-        } else {
-          clearInterval(tic);
-          consigne.textContent = 'Vous pouvez valider cette étape.';
-          b.disabled = false;
-        }
-      }, 1000);
-    }
-    if (estPdf) demarrer();                       /* le document est deja sous les yeux */
-    else $('#ouvrir').addEventListener('click', demarrer);
-
-    b.addEventListener('click', function () {
-      b.disabled = true;
-      lms().rpc('valider_etape_ref', { p_session_id: etat.seance.id, p_etape_ref: e.ref })
-        .then(function (r) {
-          if (r.error) { alerte(p, r.error.message); b.disabled = false; return; }
-          rafraichirSeance(false);
-        });
-    });
-  }
-
-  /* --- Capsule vidéo : le blocage de l'avance rapide vit ici et au serveur --- */
-  function panneauVideo(p, tete, e) {
-    var regle = e.regle || {};
-    var tol = +(regle.tolerance_saut_s || 5);
-    var seuil = +(regle.couverture_min || 0.95);
-    var prog = progressionDe(e.id);
-    var segments = (prog && prog.segments) || [];
-    var duree = e.duree_s || 0;
-
-    p.innerHTML = tete +
-      '<video id="capsule" controls preload="metadata" playsinline controlsList="nodownload" ' +
-      'src="' + echappe(e.media_url || '') + '"></video>' +
-      '<div class="actions" style="margin:.6rem 0 0"><label class="muted" style="font-size:.85rem">Vitesse ' +
-      '<select id="vitesse" style="margin-left:.4rem">' +
-      '<option value="0.75">0,75×</option><option value="0.9" selected>0,9×</option>' +
-      '<option value="1">1×</option><option value="1.25">1,25×</option>' +
-      '<option value="1.5">1,5×</option></select></label></div>' +
-      '<div class="vu"><div class="vu-piste"><div class="vu-part" id="vu-part"></div>' +
-      '<div class="vu-tete" id="vu-tete"></div></div>' +
-      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : 90 %</span></div></div>' +
-      '<div class="note" id="note-video" hidden></div>' +
-      '<div class="actions" id="actions-video"></div>' +
-      /* regle.support : document commenté par la capsule (e-mail, tableau…),
-         affiché sous la vidéo pour être lu pendant le visionnage. */
-      (regle.support
-        ? '<div class="support-video"><p class="eyebrow">' + echappe(regle.support_titre || 'Le document commenté dans la capsule') + '</p>' +
-          blocDocument(regle.support, regle.support_titre || 'Support de la capsule') + '</div>'
-        : '');
-
-    var video = $('#capsule');
-    var selVitesse = $('#vitesse');
-    function appliquerVitesse() { video.playbackRate = parseFloat(selVitesse.value); }
-    selVitesse.addEventListener('change', appliquerVitesse);
-    video.addEventListener('loadedmetadata', appliquerVitesse);
-    video.addEventListener('play', appliquerVitesse);
-    var frontiere = calculerFrontiere(segments, tol);
-    var couvert = couverture(segments);
-
-    majBarre();
-    majActions();
-
-    function majBarre() {
-      var pc = duree ? Math.min(100, (couvert / duree) * 100) : 0;
-      $('#vu-part').style.width = pc.toFixed(1) + '%';
-      $('#vu-txt').textContent = 'Vu : ' + Math.round(pc) + ' %';
-      if (duree && video.duration) {
-        $('#vu-tete').style.left = ((video.currentTime / duree) * 100).toFixed(1) + '%';
-      }
-    }
-    function majActions() {
-      var ok = estValidee(e.id);
-      $('#actions-video').innerHTML = ok
-        ? '<span class="muted">✓ Capsule vue en entier</span> ' + boutonSuivant()
-        : '<span class="muted">L\'étape se valide seule dès que la capsule a été vue.</span>';
-      brancherSuivant();
-    }
-    function dire(t) {
-      var n = $('#note-video');
-      n.textContent = t; n.hidden = !t;
-    }
-
-    // Reprise là où le visionnage continu s'est arrêté.
-    video.addEventListener('loadedmetadata', function () {
-      if (frontiere > 1 && frontiere < video.duration - 1) {
-        video.currentTime = frontiere;
-        dire('Reprise à ' + Math.floor(frontiere / 60) + ' min ' + Math.floor(frontiere % 60) + ' s.');
-      }
-      majBarre();
-    });
-
-    // Toute avance au-delà de ce qui a été réellement vu est ramenée en arrière.
-    video.addEventListener('seeking', function () {
-      if (video.currentTime > frontiere + tol) {
-        video.currentTime = frontiere;
-        dire('Cette capsule ne peut pas être avancée : elle doit être visionnée en entier.');
-      }
-    });
-
-    var debutBloc = null, dernier = 0, minuteur = null;
-    /* Intervalles deja connus, repris de la progression enregistree. */
-    var vus = (segments || []).map(function (x) { return [+x[0], +x[1]]; });
-
-    /* Regroupe les intervalles qui se touchent, pour ne pas envoyer
-       une liste qui enfle a chaque relance de la lecture. */
-    function fusionner(liste) {
-      var t = liste.slice().sort(function (a, b) { return a[0] - b[0]; });
-      var out = [];
-      t.forEach(function (x) {
-        var last = out[out.length - 1];
-        if (last && x[0] <= last[1]) last[1] = Math.max(last[1], x[1]);
-        else out.push([x[0], x[1]]);
-      });
-      return out;
-    }
-
-    video.addEventListener('play', function () {
-      debutBloc = Math.floor(video.currentTime);
-      dernier = video.currentTime;
-      minuteur = setInterval(envoyer, 10000);
-    });
-    video.addEventListener('timeupdate', function () {
-      if (Math.abs(video.currentTime - dernier) < 2) dernier = video.currentTime;
-      majBarre();
-    });
-    ['pause', 'ended'].forEach(function (ev) {
-      video.addEventListener(ev, function () { clearInterval(minuteur); envoyer(); });
-    });
-    window.addEventListener('beforeunload', envoyer);
-
-    function envoyer() {
-      if (debutBloc === null) return;
-      var fin = Math.floor(dernier);
-      if (fin - debutBloc < 2) return;
-      var d = debutBloc;
-      debutBloc = fin;
-      /* On envoie la liste complete des intervalles vus : c'est le
-         serveur qui recalcule la couverture, jamais le navigateur. */
-      vus.push([d, fin]);
-      lms().rpc('enregistrer_visionnage', {
-        p_session_id: etat.seance.id, p_etape_ref: e.ref, p_segments: fusionner(vus)
-      }).then(function (r) {
-        if (r.error) { dire(r.error.message); return; }
-        var res = premiereLigne(r.data);
-        if (res.statut === 'refuse') { dire(res.message || 'Visionnage refuse.'); return; }
-        couvert = duree * (Number(res.couverture_pct) || 0) / 100;
-        frontiere = Math.max(frontiere, fin);
-        majBarre();
-        if (res.statut === 'validee' && !estValidee(e.id)) {
-          dire('Capsule vue en entier. Étape validée.');
-          rafraichirSeance(false);
-        }
-      });
-    }
-  }
-
-  function calculerFrontiere(segments, tol) {
-    var f = 0;
-    (segments || []).slice().sort(function (a, b) { return a[0] - b[0]; })
-      .forEach(function (s) { if (s[0] <= f + tol) f = Math.max(f, s[1]); });
-    return f;
-  }
-  function couverture(segments) {
-    return (segments || []).reduce(function (t, s) { return t + (s[1] - s[0]); }, 0);
-  }
-
-  /* --- Grille de mots croisés ------------------------------------- *
-   * Rendu déclaré par l'étape : regle.rendu = 'grille'. La géométrie
-   * vit dans regle.grille et ne porte AUCUNE lettre de solution : les
-   * corrigés restent dans le schéma privé, et la page ne les découvre
-   * qu'après la remise, dans la réponse du serveur.
-   * La remise est unique : les deux ateliers se remplissent à l'écran
-   * et partent ensemble, parce que soumettre() n'accepte qu'une copie
-   * complète et une seule fois.
-   * ---------------------------------------------------------------- */
-  function panneauGrille(p, tete, e) {
-    if (estValidee(e.id)) return void panneauQcm(p, tete, e);
-
-    var G = (e.regle && e.regle.grille) || null;
-    if (!G) return void panneauQcm(p, tete, e);   /* géométrie absente : rendu générique */
-
-    var MOTS = [];
-    (G.horiz || []).forEach(function (m) { MOTS.push({ m: m, h: true }); });
-    (G.vert  || []).forEach(function (m) { MOTS.push({ m: m, h: false }); });
-    var ouvertA = new Date().toISOString();
-
-    /* Case saisissable : indexée par ligne et colonne. */
-    var occupe = {};
-    (G.cases || []).forEach(function (c) { occupe[c.r + '_' + c.c] = c; });
-
-    var h = tete +
-      '<div class="atelier"><p class="eyebrow">La grille</p>' +
-      '<p class="atelier-consigne">Retrouvez les mots correspondant aux définitions. ' +
-      'Cliquez sur une définition pour vous placer dans la grille, ou directement sur une case. ' +
-      'Les cases dorées composent le mot de l\'atelier 2.</p></div>' +
-      '<div class="grille-enveloppe"><table class="grille">';
-
-    for (var r = 0; r < G.H; r++) {
-      h += '<tr>';
-      for (var c = 0; c < G.W; c++) {
-        var cel = occupe[r + '_' + c];
-        if (!cel) { h += '<td class="vide"></td>'; continue; }
-        h += '<td id="td' + r + '_' + c + '" class="case' + (cel.m ? ' doree' : '') + '">' +
-             (cel.n ? '<span class="num">' + cel.n + '</span>' : '') +
-             '<input id="in' + r + '_' + c + '" maxlength="1" autocomplete="off" ' +
-             'inputmode="text" data-r="' + r + '" data-c="' + c + '"></td>';
-      }
-      h += '</tr>';
-    }
-    h += '</table></div><div class="definitions">';
-
-    ['horiz', 'vert'].forEach(function (sens) {
-      h += '<div><p class="eyebrow">' + (sens === 'horiz' ? 'Horizontalement' : 'Verticalement') + '</p><ul>';
-      (G[sens] || []).forEach(function (m) {
-        h += '<li id="def_' + echappe(m.ref) + '" data-r="' + m.r + '" data-c="' + m.c +
-             '" data-sens="' + sens + '"><b>' + m.n + '.</b> ' + echappe(m.def) +
-             ' <span class="muted">(' + m.len + ')</span></li>';
-      });
-      h += '</ul></div>';
-    });
-
-    h += '</div><div class="atelier"><p class="eyebrow">Le mot à reconstituer</p>' +
-         '<p class="atelier-consigne">Les cases dorées contiennent les lettres d\'un même mot, ' +
-         'dans le désordre' + (G.lettres ? ' (' + echappe(G.lettres) + ')' : '') + '. 3 points.</p>' +
-         '<input id="motCache" maxlength="24" autocomplete="off" placeholder="Le mot" ' +
-         'style="max-width:16rem;text-transform:uppercase"></div>' +
-         '<div class="actions"><button class="btn" id="envoyer-grille">Envoyer mes réponses</button>' +
-         '<span class="muted" style="font-size:.85rem">Une seule remise est possible.</span></div>';
-
-    p.innerHTML = h;
-
-    /* --- saisie : avance automatique, retour arrière, flèches --- */
-    function caseA(r, c) { return document.getElementById('in' + r + '_' + c); }
-    var sensCourant = 'horiz';
-
-    Array.prototype.forEach.call(p.querySelectorAll('.case input'), function (inp) {
-      inp.addEventListener('input', function () {
-        this.value = (this.value || '').toUpperCase().replace(/[^A-Z]/g, '');
-        if (!this.value) return;
-        var r = +this.dataset.r, c = +this.dataset.c;
-        var suiv = sensCourant === 'horiz' ? caseA(r, c + 1) : caseA(r + 1, c);
-        if (suiv) suiv.focus();
-      });
-      inp.addEventListener('keydown', function (ev) {
-        var r = +this.dataset.r, c = +this.dataset.c, cible = null;
-        if (ev.key === 'Backspace' && !this.value) {
-          cible = sensCourant === 'horiz' ? caseA(r, c - 1) : caseA(r - 1, c);
-        } else if (ev.key === 'ArrowRight') { cible = caseA(r, c + 1); sensCourant = 'horiz'; }
-        else if (ev.key === 'ArrowLeft')  { cible = caseA(r, c - 1); sensCourant = 'horiz'; }
-        else if (ev.key === 'ArrowDown')  { cible = caseA(r + 1, c); sensCourant = 'vert'; }
-        else if (ev.key === 'ArrowUp')    { cible = caseA(r - 1, c); sensCourant = 'vert'; }
-        if (cible) { ev.preventDefault(); cible.focus(); }
-      });
-      inp.addEventListener('focus', function () { this.select(); });
-    });
-
-    Array.prototype.forEach.call(p.querySelectorAll('.definitions li'), function (li) {
-      li.addEventListener('click', function () {
-        sensCourant = this.dataset.sens;
-        var d = caseA(+this.dataset.r, +this.dataset.c);
-        if (d) d.focus();
-      });
-    });
-
-    /* --- remise --- */
-    $('#envoyer-grille').addEventListener('click', function () {
-      var b = $('#envoyer-grille');
-
-      /* Un mot se reconstitue en parcourant ses cases. Une case laissée
-         vide rend le mot incomplet : le serveur refuserait la copie, on
-         le dit ici pour que le stagiaire sache OU il lui manque quelque
-         chose. */
-      var reponses = {}, incomplets = [];
-      MOTS.forEach(function (x) {
-        var m = x.m, mot = '';
-        for (var i = 0; i < m.len; i++) {
-          var el = caseA(x.h ? m.r : m.r + i, x.h ? m.c + i : m.c);
-          mot += (el && el.value) ? el.value : '';
-        }
-        reponses[m.ref] = { texte: mot };
-        if (mot.length < m.len) incomplets.push(m.n);
-      });
-
-      var cache = ($('#motCache').value || '').toUpperCase().replace(/[^A-Z]/g, '');
-      reponses[G.ref_cache] = { texte: cache };
-
-      if (incomplets.length) {
-        alerte(p, incomplets.length === 1
-          ? 'Il reste des cases vides dans un mot. Complétez la grille avant d\'envoyer.'
-          : 'Il reste des cases vides dans ' + incomplets.length + ' mots. Complétez la grille avant d\'envoyer.');
-        return;
-      }
-      if (!cache) {
-        alerte(p, 'Saisissez le mot de l\'atelier 2 avant d\'envoyer.');
-        $('#motCache').focus();
-        return;
-      }
-
-      b.disabled = true; b.textContent = 'Envoi…';
-      evalu().rpc('soumettre', {
-        p_session_id: etat.seance.id, p_etape_ref: e.ref, p_reponses: reponses
-      }).then(function (rr) {
-        if (rr.error) {
-          alerte(p, rr.error.message);
-          b.disabled = false; b.textContent = 'Envoyer mes réponses';
-          return;
-        }
-        afficherResultat(p, tete, premiereLigne(rr.data), [], e);
-        rafraichirSeance(false);
-      });
-    });
-  }
-  /* --- Questionnaire --- */
-  function panneauQcm(p, tete, e) {
-    if (estValidee(e.id)) {
-      /* La table des tentatives n'est pas lisible par un stagiaire :
-         c'est la fonction dediee qui lui rend sa copie corrigee. */
-      evalu().rpc('mon_resultat', { p_session_id: etat.seance.id, p_etape_ref: e.ref })
-        .then(function (r) {
-          if (r.error) { alerte(p, r.error.message); return; }
-          var t = premiereLigne(r.data);
-          if (t.score == null) {
-            p.innerHTML = tete + '<p class="muted">Cette étape est validée.</p>' +
-              '<div class="actions">' + boutonSuivant() + '</div>';
-            brancherSuivant();
-            return;
-          }
-          afficherResultat(p, tete, {
-            score: t.score, bareme: t.bareme, pourcentage: t.pourcentage,
-            seuil: e.seuil_pct, reussi: (e.seuil_pct == null ? null : t.pourcentage >= e.seuil_pct),
-            detail: t.detail
-          }, [], e);
-        });
-      return;
-    }
-
-    p.innerHTML = tete + '<div class="chargement">Chargement du questionnaire…</div>';
-    var ouvertA = new Date().toISOString();
-
-    contenu().from('questions').select('id,ref,ordre,type,enonce,propositions,points,groupe,consigne')
-      .eq('etape_id', e.id).order('ordre', { ascending: true })
-      .then(function (r) {
-        var qs = r.data || [];
-        if (!qs.length) { p.innerHTML = tete + '<p class="muted">Aucune question dans cette étape.</p>'; return; }
-
-        var h = tete + '<form id="form-qcm">';
-        var groupeCourant = null, consigneCourante = null;
-        qs.forEach(function (q, i) {
-          /* La consigne d'un atelier s'affiche une fois, au-dessus de
-             son groupe de questions. C'est la qu'on trouve les donnees
-             d'un exercice de calcul : sans elles, il est insoluble. */
-          if (q.groupe !== groupeCourant || q.consigne !== consigneCourante) {
-            groupeCourant = q.groupe; consigneCourante = q.consigne;
-            if (q.groupe || q.consigne) {
-              h += '<div class="atelier">' +
-                   (q.groupe ? '<p class="eyebrow">' + echappe(q.groupe) + '</p>' : '') +
-                   (q.consigne ? '<p class="atelier-consigne">' + echappe(q.consigne) + '</p>' : '') +
-                   '</div>';
-            }
-          }
-          h += '<div class="question"><span class="question-num">Question ' + (i + 1) +
-               ' · ' + q.points + ' point' + (q.points > 1 ? 's' : '') + '</span>' +
-               '<p class="question-enonce">' + echappe(q.enonce) + '</p>';
-          if (q.type === 'ouverte') {
-            h += '<textarea name="' + echappe(q.ref) + '" placeholder="Votre réponse"></textarea>';
-          } else if (q.type === 'numerique') {
-            h += '<input type="text" inputmode="decimal" name="' + echappe(q.ref) +
-                 '" placeholder="Montant, sans le symbole €" style="max-width:16rem">';
-          } else {
-            var type = q.type === 'multiple' ? 'checkbox' : 'radio';
-            (q.propositions || []).forEach(function (o, j) {
-              /* Deux formes coexistent : une simple chaine (rang = valeur)
-                 ou un objet {cle, texte} du premier modele. */
-              var val = (o && typeof o === 'object') ? o.cle : j;
-              var txt = (o && typeof o === 'object') ? o.texte : o;
-              h += '<label class="prop"><input type="' + type + '" name="' + echappe(q.ref) +
-                   '" value="' + echappe(String(val)) + '"><span>' + echappe(String(txt)) + '</span></label>';
-            });
-            if (q.type === 'multiple') h += '<p class="muted" style="font-size:.82rem;margin:.4rem 0 0">Plusieurs réponses possibles.</p>';
-          }
-          h += '</div>';
-        });
-        h += '<div class="actions"><button class="btn" type="submit" id="envoyer">Envoyer mes réponses</button>' +
-             '<span class="muted" style="font-size:.85rem">Une seule tentative est possible.</span></div></form>';
-        p.innerHTML = h;
-        initCompteurs(p);
-
-        $('#form-qcm').addEventListener('submit', function (ev) {
-          ev.preventDefault();
-          var b = $('#envoyer');
-          b.disabled = true; b.textContent = 'Envoi…';
-          var reponses = {};
-          qs.forEach(function (q) {
-            var el;
-            if (q.type === 'ouverte') {
-              el = document.querySelector('textarea[name="' + q.ref + '"]');
-              reponses[q.ref] = { texte: el ? el.value : '' };
-            } else if (q.type === 'numerique') {
-              el = document.querySelector('input[name="' + q.ref + '"]');
-              var brut = (el ? el.value : '').replace(',', '.').replace(/\s/g, '');
-              reponses[q.ref] = { valeur: brut };
-            } else {
-              var choix = Array.prototype.map.call(
-                document.querySelectorAll('[name="' + q.ref + '"]:checked'),
-                function (i) { return Number(i.value); });
-              reponses[q.ref] = (q.type === 'multiple')
-                ? { index: choix }
-                : (choix.length ? { index: choix[0] } : {});
-            }
-          });
-          /* Le serveur refuse les copies incompletes ; on le dit ici pour
-             que le stagiaire sache OU il lui manque une reponse, plutot
-             que de se heurter a un refus apres coup. */
-          var manquantes = qs.filter(function (q) {
-            var r = reponses[q.ref] || {};
-            if (q.type === 'ouverte')   return !String(r.texte || '').trim();
-            if (q.type === 'numerique') return !String(r.valeur || '').trim();
-            if (q.type === 'multiple')  return !(r.index && r.index.length);
-            return r.index === undefined || r.index === null;
-          });
-          if (manquantes.length) {
-            var rangs = manquantes.map(function (q) { return qs.indexOf(q) + 1; });
-            alerte(p, manquantes.length === 1
-              ? 'Il manque la réponse à la question ' + rangs[0] + '.'
-              : 'Il manque ' + manquantes.length + ' réponses : questions ' + rangs.join(', ') + '.');
-            var premiere = document.querySelector('[name="' + manquantes[0].ref + '"]');
-            if (premiere && premiere.scrollIntoView) premiere.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            b.disabled = false; b.textContent = 'Envoyer mes réponses';
-            return;
-          }
-
-          evalu().rpc('soumettre', {
-            p_session_id: etat.seance.id, p_etape_ref: e.ref,
-            p_reponses: reponses
-          }).then(function (rr) {
-            if (rr.error) {
-              alerte(p, rr.error.message);
-              b.disabled = false; b.textContent = 'Envoyer mes réponses';
-              return;
-            }
-            afficherResultat(p, tete, premiereLigne(rr.data), qs, e);
-            rafraichirSeance(false);
-          });
-        });
-      });
-  }
-
-  /* Les fonctions qui renvoient une table arrivent sous forme de liste. */
-  function premiereLigne(d) { return (d && d.length !== undefined) ? (d[0] || {}) : (d || {}); }
-
-  /* Le verdict d'une étape évaluée est prononcé par le serveur : acquis
-     ou non acquis, et cela compte pour le financeur. Une étape
-     d'entraînement ne prononce rien — elle oriente : on affiche la
-     phrase que porte l'étape, et rien si elle n'en porte pas. */
-  function verdict(res, e) {
-    var atteint = (res.seuil == null) ? null : (res.pourcentage >= res.seuil);
-    var r = (e && e.regle) || {};
-    if (atteint === null) return '';
-    if (e && e.evalue) {
-      return '<p class="verdict ' + (atteint ? 'ok' : 'ko') + '">' +
-             (atteint ? 'Acquis' : 'Non acquis') + '</p>';
-    }
-    var phrase = atteint ? r.message_reussite : r.message_echec;
-    return phrase ? '<p class="verdict ' + (atteint ? 'ok' : 'ko') + '">' +
-                    echappe(phrase) + '</p>' : '';
-  }
-
-  function afficherResultat(p, tete, res, qs, e) {
-    /* Le stagiaire vient d'envoyer sa copie et attend son score : on
-       l'y amene, plutot que de le laisser chercher l'ascenseur. */
-    setTimeout(function () {
-      if (p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
-    var enonces = {};
-    qs.forEach(function (q) { enonces[q.ref] = q.enonce; });
-    var h = tete + '<div class="resultat"><p class="eyebrow">Vos réponses ont été enregistrées</p>' +
-            (+res.bareme > 0
-              ? '<p class="score">' + res.score + ' <span style="font-size:1rem;color:var(--gris-moyen)">/ ' +
-                res.bareme + '</span></p>'
-              : '') +
-            (res.seuil != null
-              ? '<p class="muted">' + res.pourcentage + ' % — seuil de reussite : ' + res.seuil + ' %</p>'
-              : '') +
-            verdict(res, e);
-    if (res.detail && res.detail.length) {
-      h += '<ul class="corrige">';
-      res.detail.forEach(function (d) {
-        var ref = d.question || d.ref;
-        var c = d.juste === true ? 'juste' : (d.juste === false ? 'faux' : '');
-        /* attendu.correction = 'autonome' : rédaction non notée que le
-           stagiaire compare lui-même à la réponse modèle (explication). */
-        var autonome = d.juste == null && d.attendu && d.attendu.correction === 'autonome';
-        var texte = d.donnee && d.donnee.texte;
-        /* Dictée notée par le serveur : fautes, points obtenus, mots en erreur. */
-        var dictee = d.fautes != null;
-        if (dictee) {
-          var nf = +d.fautes;
-          h += '<li class="' + (nf === 0 ? 'juste' : 'faux') + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
-               ' — ' + String(nf).replace('.', ',') + ' faute' + (nf > 1 ? 's' : '') +
-               ' · ' + String(d.points_obtenus).replace('.', ',') + ' / ' + d.points + ' points';
-          if (d.erreurs && d.erreurs.length) {
-            h += '<span class="texte-stagiaire"><em>Vos erreurs :</em>\n' + d.erreurs.map(function (x) {
-              return x.donne == null ? '« ' + echappe(x.attendu) + ' » oublié'
-                   : x.attendu == null ? '« ' + echappe(x.donne) + ' » en trop'
-                   : '« ' + echappe(x.donne) + ' » au lieu de « ' + echappe(x.attendu) + ' »';
-            }).join('\n') + '</span>';
-          }
-          if (texte) h += '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>';
-          h += (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
-          return;
-        }
-        h += '<li class="' + c + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
-             (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte'
-               : autonome ? ' — comparez votre texte à la réponse modèle' : ' — à corriger par le formateur') +
-             (autonome && texte ? '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>' : '') +
-             (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
-      });
-      h += '</ul>';
-    }
-    h += '</div><div class="actions">' + boutonSuivant() + '</div>';
-    p.innerHTML = h;
-    brancherSuivant();
-  }
-
-  /* --- Cas pratique --- */
-  function panneauCas(p, tete, e) {
-    if (estValidee(e.id)) {
-      p.innerHTML = tete + '<p class="muted">Votre travail a été transmis au formateur. ' +
-        'Il sera corrigé et commenté.</p><div class="actions">' + boutonSuivant() + '</div>';
-      brancherSuivant();
-      return;
-    }
-    var ouvertA = new Date().toISOString();
-    p.innerHTML = tete +
-      '<p class="muted">Rédigez votre réponse. Elle sera lue et commentée par votre formateur.</p>' +
-      '<textarea id="cas" style="min-height:16rem" placeholder="Votre réponse"></textarea>' +
-      '<div class="actions"><button class="btn" id="envoyer-cas">Envoyer mon travail</button>' +
-      '<span class="muted" style="font-size:.85rem">Un seul envoi est possible.</span></div>';
-    initCompteurs(p);
-    $('#envoyer-cas').addEventListener('click', function () {
-      var b = $('#envoyer-cas'), txt = $('#cas').value.trim();
-      if (!txt) { alerte(p, 'Votre réponse est vide.'); return; }
-      b.disabled = true; b.textContent = 'Envoi…';
-      evalu().rpc('soumettre', {
-        p_session_id: etat.seance.id, p_etape_ref: e.ref,
-        p_reponses: {}, p_texte_libre: txt
-      }).then(function (r) {
-        if (r.error) { alerte(p, r.error.message); b.disabled = false; b.textContent = 'Envoyer mon travail'; return; }
-        rafraichirSeance(false);
-      });
-    });
-  }
-
-  /* --- Réponses rédigées : saisie au clavier uniquement ---
-     Le collage, le dépôt de texte et le menu contextuel sont refusés dans
-     les zones de réponse ; copier ou couper un énoncé l'est aussi dans le
-     panneau. Un compteur de caractères suit chaque zone (utile pour un SMS). */
-  function majCompteur(t, refus) {
-    var c = t.nextElementSibling;
-    if (!c || !c.classList.contains('compteur')) {
-      c = document.createElement('p'); c.className = 'compteur';
-      t.parentNode.insertBefore(c, t.nextSibling);
-    }
-    if (refus) {
-      c.classList.add('refus');
-      c.textContent = 'Le collage est désactivé : rédigez votre réponse au clavier.';
-      clearTimeout(t._refus);
-      t._refus = setTimeout(function () { majCompteur(t); }, 2500);
-      return;
-    }
-    var n = t.value.length;
-    c.classList.remove('refus');
-    c.textContent = n + ' caractère' + (n > 1 ? 's' : '') + ', espaces compris';
-  }
-  function initCompteurs(p) {
-    /* regle.correcteur = false : aucune aide à l'orthographe dans les zones
-       de réponse (dictée, rédactions notées sur la langue). Le navigateur ne
-       souligne plus les fautes et ne propose plus de correction ; les
-       extensions de type correcteur sont priées de s'abstenir.
-       regle.hauteur_zone (en rem) agrandit la zone de saisie. */
-    var r = (etat.courante && etat.courante.regle) || {};
-    Array.prototype.forEach.call(p.querySelectorAll('textarea, input[type="text"]'), function (t) {
-      if (r.correcteur === false) {
-        t.setAttribute('spellcheck', 'false');
-        t.setAttribute('autocorrect', 'off');
-        t.setAttribute('autocapitalize', 'off');
-        t.setAttribute('autocomplete', 'off');
-        t.setAttribute('data-gramm', 'false');
-        t.setAttribute('data-gramm_editor', 'false');
-        t.setAttribute('data-enable-grammarly', 'false');
-      }
-      if (t.tagName === 'TEXTAREA') {
-        if (r.hauteur_zone) t.style.minHeight = (+r.hauteur_zone) + 'rem';
-        majCompteur(t);
-      }
-    });
-  }
-  function zoneReponse(n) {
-    return n && n.closest && n.closest('#panneau textarea, #panneau input[type="text"]');
-  }
-  ['paste', 'drop'].forEach(function (type) {
-    document.addEventListener(type, function (ev) {
-      var z = zoneReponse(ev.target);
-      if (!z) return;
-      ev.preventDefault();
-      if (z.tagName === 'TEXTAREA') majCompteur(z, true);
-    }, true);
-  });
-  ['copy', 'cut'].forEach(function (type) {
-    document.addEventListener(type, function (ev) {
-      if (ev.target && ev.target.closest && ev.target.closest('#panneau')) ev.preventDefault();
-    }, true);
-  });
-  document.addEventListener('contextmenu', function (ev) {
-    if (zoneReponse(ev.target)) ev.preventDefault();
-  }, true);
-  document.addEventListener('input', function (ev) {
-    if (ev.target && ev.target.tagName === 'TEXTAREA' && ev.target.closest('#panneau')) majCompteur(ev.target);
-  }, true);
-
-  function alerte(p, texte) {
-    var d = document.createElement('div');
-    d.className = 'message';
-    d.textContent = texte;
-    p.insertBefore(d, p.firstChild.nextSibling);
-  }
-
-  /* ------------------------------------------------------------------ *
-   * Session déjà ouverte ?
-   * ------------------------------------------------------------------ */
-  if (APERCU) document.getElementById('ruban-demo').hidden = false;
+  /* Session déjà ouverte : sur un poste partagé, ce n'est peut-être pas
+     la même personne. On montre le compte et on laisse choisir. */
   db.auth.getSession().then(function (r) {
-    if (r.data && r.data.session) demarrer();
+    var s = r.data && r.data.session;
+    if (!s) { montrer('#vue-connexion'); return; }
+    $('#reprise-mail').textContent = (s.user && s.user.email) || '';
+    montrer('#vue-reprise');
+    $('#btn-continuer').onclick = function () {
+      this.disabled = true;
+      aiguiller(s, true).catch(function () {
+        return db.auth.signOut().then(function () { montrer('#vue-connexion'); });
+      });
+    };
+    $('#btn-changer').onclick = function () {
+      db.auth.signOut().then(function () {
+        $('#email').value = ''; $('#mdp').value = '';
+        montrer('#vue-connexion'); $('#email').focus();
+      });
+    };
   });
 })();
 </script>

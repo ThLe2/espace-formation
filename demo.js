@@ -103,7 +103,8 @@ window.LMS_CLIENT_DEMO = function () {
     auth: {
       signInWithPassword: function () { return Promise.resolve({ data: {}, error: null }); },
       signOut: function () { return Promise.resolve({}); },
-      getSession: function () { return Promise.resolve({ data: { session: { user: { id: 'demo' } } } }); }
+      getSession: function () { return Promise.resolve({ data: { session: { user: { id: 'demo' } } } }); },
+      getUser: function () { return Promise.resolve({ data: { user: { id: 'demo', email: 'apercu@demo' } }, error: null }); }
     },
     schema: function (nom) {
       return {
