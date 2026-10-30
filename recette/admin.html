@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Accompagna — Administration</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%238C1E70'/%3E%3Cpath d='M7 12l3.5 3.5 6.5-7' stroke='%23fff' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --prune:#8C1E70; --prune-fonce:#5E1349; --prune-clair:#F4E6EE; --rose:#C77BAA;
+  --vert:#283C28; --vert-clair:#EAF5EF; --gris:#3C3C3C; --gris-moyen:#8A7A85;
+  --trame:#E8DCE5; --fond:#FAF6F8; --blanc:#FFFFFF;
+  --rouge:#B3261E; --rouge-clair:#FCEDEC; --or-clair:#FCF4DC;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);color:var(--gris);background:var(--fond);line-height:1.5}
+.bandeau{background:var(--prune-fonce);color:#fff;padding:.7rem 1.2rem;display:flex;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.marque{font-weight:700}
+.marque .perf{color:var(--rose);font-weight:500}
+.marque .role{color:#E8C9DF;font-size:.75rem;letter-spacing:.1em;margin-left:.6rem;text-transform:uppercase}
+.logo{display:inline-flex;align-items:center;gap:.5rem;vertical-align:middle}
+.logo .mot{color:#fff;font-size:1.15rem;font-weight:700;letter-spacing:-.03em;line-height:1}
+.espaces{display:inline-flex;gap:.2rem;margin-left:1rem;vertical-align:middle;flex-wrap:wrap}
+.espaces a{color:#EBD6E4;text-decoration:none;font-size:.8rem;font-weight:600;padding:.28rem .7rem;
+  border:1px solid transparent;border-radius:999px}
+.espaces a:hover{border-color:#8C1E70;color:#fff}
+.espaces a.actif{background:#fff;color:var(--prune-fonce)}
+.qui{font-size:.85rem;color:#EBD6E4;display:flex;align-items:center;gap:.8rem}
+nav{background:#fff;border-bottom:1px solid var(--trame);padding:0 1.2rem;display:flex;gap:.2rem}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:.7rem 1rem;
+  font-family:inherit;font-size:.92rem;font-weight:600;color:var(--gris-moyen);cursor:pointer}
+nav button.actif{color:var(--prune-fonce);border-bottom-color:var(--prune)}
+main{max-width:1120px;margin:0 auto;padding:1.4rem 1.2rem 3rem}
+h2{font-size:1.05rem;color:var(--prune-fonce);margin:0 0 .2rem}
+h3{font-size:.95rem;color:var(--prune-fonce);margin:1.2rem 0 .4rem}
+h3:first-of-type{margin-top:.2rem}
+.muted{color:var(--gris-moyen);font-size:.87rem}
+.carte{background:#fff;border:1px solid var(--trame);border-radius:10px;padding:1.1rem 1.2rem;margin-bottom:1.2rem}
+.carte>.sub{margin:0 0 .9rem;color:var(--gris-moyen);font-size:.85rem}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));gap:.8rem}
+label{display:block;font-size:.75rem;color:var(--gris-moyen);margin-bottom:.22rem;
+  text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{width:100%;padding:.5rem .6rem;border:1.5px solid var(--trame);border-radius:7px;
+  font-family:inherit;font-size:.92rem;color:var(--gris);background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--prune)}
+textarea{min-height:8rem;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;
+  line-height:1.45;white-space:pre;overflow-x:auto}
+td.secret{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.84rem;
+  color:var(--prune-fonce);font-weight:700}
+.btn{border:0;border-radius:7px;padding:.55rem 1.1rem;font-family:inherit;font-size:.92rem;
+  font-weight:600;cursor:pointer;background:var(--prune);color:#fff}
+.btn:disabled{background:#C9AABE;cursor:default}
+.btn-secondaire{background:#fff;color:var(--prune);border:1px solid var(--prune)}
+.btn-mini{padding:.25rem .6rem;font-size:.8rem;background:#fff;color:var(--prune);
+  border:1px solid var(--trame);border-radius:6px;cursor:pointer;font-family:inherit}
+.btn-mini:hover{border-color:var(--prune)}
+.actions{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:.9rem}
+table{width:100%;border-collapse:collapse;font-size:.87rem}
+th{background:var(--prune-fonce);color:#fff;text-align:left;padding:.45rem .6rem;font-weight:600;
+  font-size:.74rem;text-transform:uppercase;letter-spacing:.04em}
+td{border-bottom:1px solid var(--trame);padding:.45rem .6rem;vertical-align:middle}
+tr.test td{background:var(--fond);color:var(--gris-moyen)}
+tr.passee td{color:var(--gris-moyen)}
+tr.sorti td{color:var(--gris-moyen)}
+.etiquette{display:inline-block;font-size:.7rem;font-weight:700;padding:.05rem .45rem;
+  border-radius:4px;background:var(--prune-clair);color:var(--prune-fonce);margin-left:.4rem}
+.etat{display:inline-block;font-size:.74rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;
+  white-space:nowrap}
+.etat.ok{background:var(--vert-clair);color:var(--vert)}
+.etat.attention{background:var(--or-clair);color:#8a6d1f}
+.etat.alerte{background:var(--rouge-clair);color:var(--rouge)}
+.etat.neutre{background:var(--fond);color:var(--gris-moyen)}
+.message{padding:.6rem .8rem;border-radius:7px;font-size:.9rem;margin-top:.8rem}
+.message.err{background:var(--rouge-clair);color:var(--rouge);border-left:4px solid var(--rouge)}
+.message.ok{background:var(--prune-clair);color:var(--prune-fonce);border-left:4px solid var(--prune)}
+.connexion{max-width:24rem;margin:4rem auto;background:#fff;border:1px solid var(--trame);
+  border-radius:10px;padding:1.6rem}
+.connexion h2{margin-bottom:.5rem;font-size:1.3rem}
+.connexion label{margin-top:.8rem}
+.bascule{font-size:.85rem;color:var(--gris-moyen);display:flex;align-items:center;gap:.4rem;
+  text-transform:none;letter-spacing:0;margin:0}
+.bascule input{width:auto}
+.compteur{font-size:1.5rem;font-weight:700;color:var(--prune-fonce);line-height:1}
+.compteur small{font-size:.85rem;color:var(--gris-moyen);font-weight:400}
+.ouverte{border-left:4px solid var(--prune)}
+.matrice{overflow-x:auto}
+th.col-note{text-align:center}
+td.note{text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+td.note.cliquable{cursor:pointer}
+td.note.cliquable:hover{outline:2px solid var(--prune);outline-offset:-2px}
+td.note.bien{background:var(--vert-clair);color:var(--vert)}
+td.note.moyen{background:var(--or-clair);color:#8a6d1f}
+td.note.faible{background:var(--rouge-clair);color:var(--rouge)}
+td.note.vide{color:var(--gris-moyen)}
+tr.total td{background:var(--prune-clair);color:var(--prune-fonce);font-weight:700}
+tr.questions td{background:var(--fond);color:var(--gris-moyen);font-size:.74rem;
+  text-align:center;padding:.2rem .6rem}
+footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem 1rem 2rem}
+</style>
+</head>
+<body>
+
+<div id="ecran-connexion" hidden>
+  <div class="connexion">
+    <h2>Back-office</h2>
+    <p class="muted">Réservé au personnel de l'organisme de formation.</p>
+    <label for="c-email">Adresse e-mail</label>
+    <input id="c-email" type="email" autocomplete="username">
+    <label for="c-mdp">Mot de passe</label>
+    <input id="c-mdp" type="password" autocomplete="current-password">
+    <div class="actions"><button class="btn" id="btn-entrer">Se connecter</button></div>
+    <div id="msg-connexion"></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header class="bandeau">
+    <span class="marque"><span class="logo"><svg width="34" height="28" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#F4E6EE"/><circle cx="42" cy="14" r="10" fill="#fff"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#5E1349" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mot">accompagna</span></span>
+      <span class="espaces" id="espaces" hidden>
+        <a href="admin.html?espace=administration" data-espace="administration">Administration</a>
+        <a href="admin.html?espace=formateurs" data-espace="formateurs">Formateurs</a>
+        <a href="portail.html?demo" data-espace="stagiaires">Aperçu stagiaires</a>
+      </span>
+      <span class="role" id="role-espace">Back-office</span></span>
+    <span class="qui"><span id="qui-nom"></span>
+      <button class="btn-mini" id="btn-sortir"
+        style="background:transparent;color:#EBD6E4;border-color:#8C1E70">Se déconnecter</button></span>
+  </header>
+
+  <nav>
+    <button data-onglet="seances" class="actif">Séances</button>
+    <button data-onglet="groupes">Groupes</button>
+    <button data-onglet="stagiaires">Stagiaires</button>
+    <button data-onglet="resultats">Résultats</button>
+    <button data-onglet="copies">Copies</button>
+    <button data-onglet="personnel">Personnel</button>
+  </nav>
+
+  <main>
+    <section id="vue-seances">
+      <div class="carte ouverte">
+        <h2>Séances ouvertes</h2>
+        <p class="sub">Ce qui se joue en ce moment.</p>
+        <div id="ouvertes"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Programmer une séance</h2>
+        <div class="grille">
+          <div><label for="f-da">Module (DA)</label><select id="f-da"></select></div>
+          <div><label for="f-groupe">Groupe</label><select id="f-groupe"></select></div>
+          <div><label for="f-date">Date</label><input id="f-date" type="date"></div>
+          <div><label for="f-fin">Fin (si fenêtre)</label><input id="f-fin" type="date"></div>
+          <div><label for="f-debut">Ouverture</label><input id="f-debut" type="time" value="08:30"></div>
+          <div><label for="f-hfin">Fin</label><input id="f-hfin" type="time" value="16:30"></div>
+          <div><label for="f-cloture">Clôture</label><input id="f-cloture" type="time" value="18:30"></div>
+          <div style="grid-column:span 2"><label for="f-libelle">Libellé (facultatif)</label>
+            <input id="f-libelle" placeholder="Repris du module si vide"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-creer">Créer la séance</button>
+          <button class="btn btn-secondaire" id="btn-vider">Réinitialiser</button>
+          <span class="muted">Laissez « Fin » vide pour une séance d'une journée.</span>
+        </div>
+        <div id="msg-creation"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Affecter un formateur</h2>
+        <p class="sub">L'affectation porte sur toutes les séances d'un module pour un groupe —
+          pas séance par séance. Le formateur affecté pourra annoter les copies.</p>
+        <div class="grille">
+          <div><label for="a-formateur">Formateur</label><select id="a-formateur"></select></div>
+          <div><label for="a-da">Module (DA)</label><select id="a-da"></select></div>
+          <div><label for="a-groupe">Groupe</label><select id="a-groupe"></select></div>
+        </div>
+        <div class="actions"><button class="btn" id="btn-affecter">Affecter</button></div>
+        <div id="msg-affectation"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Séances programmées</h2>
+        <div class="actions" style="margin:0 0 .8rem">
+          <label class="bascule"><input type="checkbox" id="bas-passees"> Afficher les séances passées</label>
+          <label class="bascule"><input type="checkbox" id="bas-test"> Afficher les séances de test</label>
+          <button class="btn-mini" id="btn-recharger">Recharger</button>
+        </div>
+        <div id="liste"></div>
+      </div>
+    </section>
+
+    <section id="vue-groupes" hidden>
+      <div class="carte">
+        <h2>Créer un groupe</h2>
+        <p class="sub">Le code analytique identifie la promotion et se qualifie par l'année — ARM-2610, A2-2026.</p>
+        <div class="grille">
+          <div><label for="g-code">Code analytique</label><input id="g-code" placeholder="ARM-2610"></div>
+          <div style="grid-column:span 2"><label for="g-libelle">Libellé</label>
+            <input id="g-libelle" placeholder="Armatis — octobre 2026"></div>
+          <div><label for="g-debut">Début</label><input id="g-debut" type="date"></div>
+          <div><label for="g-fin">Fin</label><input id="g-fin" type="date"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-creer-groupe">Créer le groupe</button>
+          <label class="bascule"><input type="checkbox" id="g-test"> Groupe de test</label>
+        </div>
+        <div id="msg-groupe"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Groupes</h2>
+        <div class="actions" style="margin:0 0 .8rem">
+          <label class="bascule"><input type="checkbox" id="bas-groupes-test"> Afficher les groupes de test</label>
+          <button class="btn-mini" id="btn-recharger-groupes">Recharger</button>
+        </div>
+        <div id="liste-groupes"></div>
+      </div>
+    </section>
+
+    <section id="vue-stagiaires" hidden>
+      <div class="carte">
+        <h2>Groupe</h2>
+        <div class="grille">
+          <div style="grid-column:span 2"><label for="s-groupe">Choisir un groupe</label>
+            <select id="s-groupe"></select></div>
+        </div>
+        <div id="resume-groupe" class="muted" style="margin-top:.7rem"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Inscrits</h2>
+        <div id="liste-stagiaires"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Importer une liste</h2>
+        <p class="sub">Collez les lignes de votre feuille de suivi, en-tête comprise —
+          tabulations, points-virgules ou virgules, peu importe. Les colonnes
+          <b>nom</b> et <b>prenom</b> sont indispensables.</p>
+        <label for="im-texte">Lignes collées</label>
+        <textarea id="im-texte" placeholder="nom&#9;prenom&#9;telephone&#9;date_naissance&#9;compte_teams&#10;BERNARD&#9;Lucie&#9;06.12.34.56.78&#9;23/10/2001&#9;l.bernard@…"></textarea>
+        <div class="actions">
+          <button class="btn" id="btn-importer">Importer dans le groupe</button>
+          <span class="muted">L'import écrit directement : il n'y a pas de brouillon.
+            Le compte rendu s'affiche ensuite, ligne par ligne.</span>
+        </div>
+        <div id="msg-import"></div>
+        <div id="resultat-import"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Comptes de connexion</h2>
+        <p class="sub">Le compte est l'adresse Teams du stagiaire ; le mot de passe se calcule
+          à partir de son nom et de son identifiant de suivi. Regardez d'abord ce qui serait fait.</p>
+        <div class="actions" style="margin-top:0">
+          <button class="btn btn-secondaire" id="btn-comptes-blanc">Voir ce qui serait fait</button>
+          <button class="btn" id="btn-comptes-vrai">Créer les comptes</button>
+        </div>
+        <div id="msg-comptes"></div>
+        <div id="resultat-comptes"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Entrée tardive</h2>
+        <p class="sub">Un stagiaire déjà enregistré qui rejoint le groupe en cours de formation.</p>
+        <div class="grille">
+          <div><label for="i-identifiant">Identifiant</label><input id="i-identifiant" placeholder="A2-2026_07"></div>
+          <div><label for="i-date">Date d'entrée</label><input id="i-date" type="date"></div>
+        </div>
+        <div class="actions"><button class="btn" id="btn-inscrire">Inscrire</button></div>
+        <div id="msg-inscrire"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Sortie anticipée</h2>
+        <p class="sub">L'inscription se ferme à la date indiquée. Rien n'est effacé : les tentatives restent au dossier.</p>
+        <div class="grille">
+          <div><label for="o-identifiant">Identifiant</label><input id="o-identifiant" placeholder="A2-2026_07"></div>
+          <div><label for="o-date">Date de sortie</label><input id="o-date" type="date"></div>
+          <div style="grid-column:span 2"><label for="o-motif">Motif</label>
+            <input id="o-motif" placeholder="Abandon, embauche, réorientation…"></div>
+        </div>
+        <div class="actions"><button class="btn" id="btn-sortie">Enregistrer la sortie</button></div>
+        <div id="msg-sortie"></div>
+      </div>
+    </section>
+    <section id="vue-resultats" hidden>
+      <div class="carte">
+        <h2>Résultats par groupe et par module</h2>
+        <p class="sub">Une ligne par couple groupe / module. Les notes sont sur 20,
+          calculées à partir du barème de chaque étape portant des questions.</p>
+        <div class="grille">
+          <div><label for="r-da">Module (DA)</label><select id="r-da"></select></div>
+          <div><label>&nbsp;</label>
+            <button class="btn-mini" id="btn-recharger-resultats">Recharger</button></div>
+        </div>
+        <div class="actions">
+          <label class="bascule"><input type="checkbox" id="bas-resultats-test">
+            Afficher les groupes de test</label>
+        </div>
+        <div id="liste-synthese" style="margin-top:.9rem"></div>
+      </div>
+
+      <div class="carte" id="carte-matrice" hidden>
+        <h2 id="titre-matrice">Détail</h2>
+        <p class="sub">Cliquez sur une note pour ouvrir la copie correspondante.
+          Une case vide signifie qu'aucune copie n'a été remise. La moyenne est
+          pondérée au barème : survolez-la pour voir le détail des points.</p>
+        <div class="matrice" id="detail-matrice"></div>
+        <div class="actions">
+          <button class="btn btn-secondaire" id="btn-export-matrice">Exporter en CSV</button>
+          <button class="btn-mini" id="btn-fermer-matrice">Fermer</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="vue-copies" hidden>
+      <div class="carte">
+        <h2>Copies remises</h2>
+        <p class="sub">Vous voyez les séances que vous animez, et celles qui les ont précédées
+          pour le même groupe. L'annotation n'est possible que sur les vôtres.</p>
+        <div class="grille">
+          <div><label for="cp-seance">Séance</label><select id="cp-seance"></select></div>
+          <div style="grid-column:span 2"><label for="cp-filtre">Filtrer</label>
+            <input id="cp-filtre" placeholder="Nom, stagiaire, évaluation…"></div>
+          <div><label>&nbsp;</label><button class="btn-mini" id="btn-recharger-copies"
+            style="padding:.5rem .8rem">Recharger</button></div>
+        </div>
+        <div id="liste-copies" style="margin-top:.9rem"></div>
+      </div>
+
+      <div class="carte" id="carte-copie" hidden>
+        <h2 id="titre-copie">Copie</h2>
+        <div id="detail-copie"></div>
+        <h3>Annotation du formateur</h3>
+        <div id="annotations-existantes"></div>
+        <div class="grille">
+          <div><label for="an-note">Note</label><input id="an-note" type="number" step="0.5" min="0"></div>
+          <div style="grid-column:span 2"><label for="an-commentaire">Commentaire</label>
+            <input id="an-commentaire" placeholder="Ce qui justifie la note"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-annoter">Enregistrer l'annotation</button>
+          <button class="btn btn-secondaire" id="btn-fermer-copie">Fermer</button>
+          <span class="muted">L'annotation s'ajoute, elle ne remplace rien.</span>
+        </div>
+        <div id="msg-annotation"></div>
+      </div>
+    </section>
+
+    <section id="vue-personnel" hidden>
+      <div class="carte">
+        <h2>Enrôler un membre du personnel</h2>
+        <p class="sub"><b>Le compte doit exister au préalable</b> dans Supabase,
+          sous Authentication → Users. Cette page rattache un compte existant à un rôle ;
+          elle ne le crée pas.</p>
+        <div class="grille">
+          <div style="grid-column:span 2"><label for="p-email">Adresse e-mail du compte</label>
+            <input id="p-email" type="email" placeholder="prenom.nom@tmk-performances.com"></div>
+          <div><label for="p-nom">Nom</label><input id="p-nom"></div>
+          <div><label for="p-prenom">Prénom</label><input id="p-prenom"></div>
+          <div><label for="p-role">Rôle</label><select id="p-role">
+            <option value="formateur">Formateur</option>
+            <option value="gestionnaire">Gestionnaire</option>
+            <option value="admin">Administrateur</option>
+          </select></div>
+        </div>
+        <div class="actions"><button class="btn" id="btn-enroler">Enrôler</button></div>
+        <div id="msg-personnel"></div>
+      </div>
+
+      <div class="carte">
+        <h2>Personnel</h2>
+        <div id="liste-personnel"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>TMK Performances — N° Siret : 49841924100027 — Code NAF : 8559A</footer>
+</div>
+
+<!-- Publié : session partagée avec l'écran de connexion unique (index.html).
+     Ouvert en local sans ce fichier : connexion propre au back-office. -->
+<script src="vendor/supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ *
+   * Configuration — les mêmes valeurs que le config.js du portail.
+   * La clé publiable est faite pour être connue : ce sont les politiques
+   * RLS qui protègent les données. Ne jamais inscrire ici une clé
+   * sb_secret_, elle contourne toutes les règles d'accès.
+   * ------------------------------------------------------------------ */
+  var URL_PROJET = 'https://ibkvyjlglwufxvzxnysa.supabase.co';
+  var CLE        = 'sb_publishable_xUfZHSOHf4TnBRRyzU_qJA_TcXIMSKX';
+
+  var CLES = { jeton: 'tmk_bo_jeton' };
+  var jeton = null, moi = null, monUid = null, gestionnaire = false;
+  /* Espace demandé : Administration (gestionnaires) ou Formateurs. */
+  var ESPACE = /[?&]espace=formateurs\b/.test(location.search) ? 'formateurs' : 'administration';
+  var estGestionnaire = false;
+  /* En ligne, la session vient de l'écran de connexion unique et le
+     client Supabase la renouvelle tout seul (jeton valable une heure). */
+  var PARTAGE = (location.protocol !== 'file:' && window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(URL_PROJET, CLE) : null;
+  function versConnexion() {
+    location.replace('index.html?retour=' + encodeURIComponent('admin.html?espace=' + ESPACE));
+  }
+  var DAS = [], GROUPES = [], SEANCES = [], INSCRIPTIONS = [], STAGIAIRES = [];
+  var PERSONNEL = [], RESULTATS = [], copieCourante = null;
+  var SYNTHESE = [], MATRICE = [], MATRICE_META = null;
+  /* Bornes des couleurs de la matrice, à ajuster si besoin. */
+  var SEUIL_BIEN = 15, SEUIL_MOYEN = 12;
+  var FORMATEUR_SEANCE = {};
+
+  var $ = function (s) { return document.querySelector(s); };
+  var echappe = function (t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+
+  /* Les schémas non publics passent par Accept-Profile en lecture et
+     Content-Profile en écriture. */
+  function entetes(schema, ecriture) {
+    var h = { apikey: CLE, 'Content-Type': 'application/json' };
+    if (jeton) h['Authorization'] = 'Bearer ' + jeton;
+    if (schema) h[ecriture ? 'Content-Profile' : 'Accept-Profile'] = schema;
+    return h;
+  }
+
+  function lire(schema, chemin) {
+    return fetch(URL_PROJET + '/rest/v1/' + chemin, { headers: entetes(schema, false) })
+      .then(function (r) {
+        return r.json().then(function (d) {
+          if (!r.ok) throw new Error(d.message || d.hint || ('Erreur ' + r.status));
+          return d;
+        });
+      });
+  }
+
+  function appeler(schema, fonction, corps) {
+    return fetch(URL_PROJET + '/rest/v1/rpc/' + fonction, {
+      method: 'POST', headers: entetes(schema, true), body: JSON.stringify(corps || {})
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var d = null;
+        try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; }
+        if (!r.ok) throw new Error((d && (d.message || d.hint)) || ('Erreur ' + r.status));
+        return d;
+      });
+    });
+  }
+
+  function alerte(ou, texte, genre) {
+    $(ou).innerHTML = '<div class="message ' + (genre || 'err') + '">' + echappe(texte) + '</div>';
+  }
+
+  function aujourdhui() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+           '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function maintenant() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function dateCourte(d) {
+    if (!d) return '';
+    var p = String(d).split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function hhmm(t) { return String(t || '').slice(0, 5); }
+  /* L'horodatage de remise est celui du serveur : il ne bouge pas, même
+     si la date de la séance est modifiée après coup. C'est lui qui dit
+     l'ordre réel du parcours. */
+	 
+  /* function horodate(t) { 
+     if (!t) return '—';
+     var s2 = String(t);
+     return dateCourte(s2.slice(0, 10)) + ' ' + s2.slice(11, 16);
+  } */
+  
+    function horodate(t) {
+    if (!t) return '—';
+    var d = new Date(t);
+    if (isNaN(d)) return '—';
+    return d.toLocaleString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }).replace(',', '');
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Connexion
+   * ------------------------------------------------------------------ */
+  function demarrerConnexion() {
+    $('#ecran-connexion').hidden = false;
+    $('#btn-entrer').addEventListener('click', entrer);
+    $('#c-mdp').addEventListener('keydown', function (e) { if (e.key === 'Enter') entrer(); });
+  }
+
+  function entrer() {
+    var b = $('#btn-entrer');
+    if (/^sb_secret_|service_role/.test(CLE)) {
+      alerte('#msg-connexion', "La clé inscrite dans ce fichier est une clé secrète : elle contourne toutes les règles d'accès. Remplacez-la par la clé publiable.");
+      return;
+    }
+    var email = ($('#c-email').value || '').trim(), mdp = $('#c-mdp').value || '';
+    if (!email || !mdp) { alerte('#msg-connexion', 'Adresse e-mail et mot de passe attendus.'); return; }
+    b.disabled = true; b.textContent = 'Connexion…';
+    fetch(URL_PROJET + '/auth/v1/token?grant_type=password', {
+      method: 'POST', headers: { apikey: CLE, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: mdp })
+    }).then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.access_token) throw new Error(d.error_description || d.msg || 'Connexion refusée.');
+        jeton = d.access_token;
+        monUid = d.user && d.user.id;
+        sessionStorage.setItem(CLES.jeton, jeton);
+        return verifierPersonnel();
+      })
+      .catch(function (e) {
+        alerte('#msg-connexion', e.message);
+        b.disabled = false; b.textContent = 'Se connecter';
+      });
+  }
+
+  /* Le back-office est réservé au personnel : la base le dit, on le
+     vérifie avant d'afficher quoi que ce soit. */
+  /* Qui suis-je : l'identifiant du compte, puis la fiche formateur qui
+     lui correspond. La politique de lecture montre TOUT le personnel :
+     prendre le premier venu donnerait la mauvaise identité, et donc le
+     mauvais auteur sur les annotations. */
+  function monCompte() {
+    if (monUid) return Promise.resolve(monUid);
+    return fetch(URL_PROJET + '/auth/v1/user', { headers: entetes(null, false) })
+      .then(function (r) { return r.json(); })
+      .then(function (u) { monUid = u && u.id; return monUid; });
+  }
+
+  function verifierPersonnel() {
+    return appeler('lms', 'est_personnel', {}).then(function (ok) {
+      if (ok !== true) {
+        jeton = null; sessionStorage.removeItem(CLES.jeton);
+        if (PARTAGE) { location.replace('portail.html'); return new Promise(function () {}); }
+        throw new Error("Ce compte n'est pas rattaché au personnel de l'organisme de formation.");
+      }
+      return appeler('lms', 'est_gestionnaire', {});
+    }).then(function (g) {
+      estGestionnaire = (g === true);
+      if (!estGestionnaire) ESPACE = 'formateurs';
+      gestionnaire = estGestionnaire && ESPACE === 'administration';
+      return monCompte();
+    }).then(function (uid) {
+      return lire('lms', 'formateurs?select=id,nom,prenom,role&user_id=eq.' + uid);
+    }).then(function (f) {
+      moi = (f && f[0]) || null;
+      ouvrirApplication();
+    });
+  }
+
+  function ouvrirApplication() {
+    $('#ecran-connexion').hidden = true;
+    $('#app').hidden = false;
+    $('#qui-nom').textContent = moi
+      ? (moi.prenom + ' ' + moi.nom + ' · ' + (moi.role || '')) : '';
+    document.title = 'Accompagna — ' + (ESPACE === 'formateurs' ? 'Formateurs' : 'Administration');
+    if (PARTAGE) {
+      $('#espaces').hidden = false;
+      $('#role-espace').hidden = true;
+      Array.prototype.forEach.call(document.querySelectorAll('#espaces a'), function (a) {
+        if (a.dataset.espace === 'administration' && !estGestionnaire) a.hidden = true;
+        a.classList.toggle('actif', a.dataset.espace === ESPACE);
+      });
+    } else {
+      $('#role-espace').textContent = ESPACE === 'formateurs' ? 'Formateurs' : 'Back-office';
+    }
+    /* Un formateur ne crée ni groupes, ni stagiaires, ni comptes. */
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
+      if (!gestionnaire && (b.dataset.onglet === 'groupes' ||
+                            b.dataset.onglet === 'stagiaires' ||
+                            b.dataset.onglet === 'personnel')) b.hidden = true;
+    });
+    $('#btn-sortir').addEventListener('click', function () {
+      sessionStorage.removeItem(CLES.jeton);
+      if (PARTAGE) PARTAGE.auth.signOut().then(function () { location.replace('index.html'); });
+      else location.reload();
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
+      b.addEventListener('click', function () { ouvrirOnglet(this.dataset.onglet); });
+    });
+
+    $('#btn-creer').addEventListener('click', creerSeance);
+    $('#btn-vider').addEventListener('click', viderFormulaire);
+    $('#btn-recharger').addEventListener('click', chargerSeances);
+    $('#bas-passees').addEventListener('change', dessinerSeances);
+    $('#bas-test').addEventListener('change', dessinerSeances);
+    $('#f-date').value = aujourdhui();
+
+    $('#btn-creer-groupe').addEventListener('click', creerGroupe);
+    $('#btn-recharger-groupes').addEventListener('click', function () {
+      chargerReferences().then(dessinerGroupes);
+    });
+    $('#bas-groupes-test').addEventListener('change', dessinerGroupes);
+
+    $('#s-groupe').addEventListener('change', chargerStagiaires);
+    $('#btn-importer').addEventListener('click', importer);
+    $('#btn-comptes-blanc').addEventListener('click', function () { comptes(false); });
+    $('#btn-comptes-vrai').addEventListener('click', function () { comptes(true); });
+    $('#btn-inscrire').addEventListener('click', inscrire);
+    $('#btn-sortie').addEventListener('click', sortir);
+    $('#i-date').value = aujourdhui();
+    $('#o-date').value = aujourdhui();
+
+    $('#btn-affecter').addEventListener('click', affecter);
+    $('#btn-recharger-copies').addEventListener('click', chargerCopies);
+    $('#cp-filtre').addEventListener('input', dessinerCopies);
+    $('#cp-seance').addEventListener('change', dessinerCopies);
+    $('#btn-annoter').addEventListener('click', annoter);
+    $('#btn-fermer-copie').addEventListener('click', function () {
+      $('#carte-copie').hidden = true; copieCourante = null;
+    });
+    $('#btn-recharger-resultats').addEventListener('click', chargerResultats);
+    $('#r-da').addEventListener('change', dessinerSynthese);
+    $('#bas-resultats-test').addEventListener('change', dessinerSynthese);
+    $('#btn-export-matrice').addEventListener('click', exporterMatrice);
+    $('#btn-fermer-matrice').addEventListener('click', function () {
+      $('#carte-matrice').hidden = true;
+    });
+
+    $('#btn-enroler').addEventListener('click', enroler);
+
+    chargerReferences().then(function () { chargerSeances(); dessinerGroupes(); });
+  }
+
+  function ouvrirOnglet(nom) {
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
+      b.classList.toggle('actif', b.dataset.onglet === nom);
+    });
+    $('#vue-seances').hidden = nom !== 'seances';
+    $('#vue-groupes').hidden = nom !== 'groupes';
+    $('#vue-stagiaires').hidden = nom !== 'stagiaires';
+    $('#vue-resultats').hidden = nom !== 'resultats';
+    $('#vue-copies').hidden = nom !== 'copies';
+    $('#vue-personnel').hidden = nom !== 'personnel';
+    if (nom === 'seances') chargerSeances();
+    if (nom === 'groupes') dessinerGroupes();
+    if (nom === 'stagiaires') chargerStagiaires();
+    if (nom === 'resultats') chargerResultats();
+    if (nom === 'copies') chargerCopies();
+    if (nom === 'personnel') chargerPersonnel();
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Références
+   * ------------------------------------------------------------------ */
+  function chargerReferences() {
+    return Promise.all([
+      lire('contenu', 'das?select=code,libelle&order=libelle'),
+      lire('lms', 'groupes?select=id,code_analytique,libelle,date_debut,date_fin,est_test&order=date_debut.desc'),
+      lire('lms', 'inscriptions?select=groupe_id,stagiaire_id,periode,motif_sortie,sortie_le')
+    ]).then(function (r) {
+      DAS = r[0] || []; GROUPES = r[1] || []; INSCRIPTIONS = r[2] || [];
+      $('#f-da').innerHTML = DAS.map(function (d) {
+        return '<option value="' + echappe(d.code) + '">' + echappe(d.libelle) + '</option>';
+      }).join('') || '<option value="">Aucun module en base</option>';
+      var opts = GROUPES.map(function (g) {
+        return '<option value="' + echappe(g.code_analytique) + '">' + echappe(g.code_analytique) +
+               ' — ' + echappe(g.libelle) + (g.est_test ? ' (test)' : '') + '</option>';
+      }).join('') || '<option value="">Aucun groupe</option>';
+      var avant = $('#s-groupe').value;
+      $('#f-groupe').innerHTML = opts;
+      $('#s-groupe').innerHTML = opts;
+      $('#a-groupe').innerHTML = opts;
+      $('#a-da').innerHTML = $('#f-da').innerHTML;
+      if (avant) $('#s-groupe').value = avant;
+    });
+  }
+
+  function effectif(groupeId) {
+    return INSCRIPTIONS.filter(function (i) { return i.groupe_id === groupeId; }).length;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Séances
+   * ------------------------------------------------------------------ */
+  function creerSeance() {
+    var b = $('#btn-creer');
+    var da = $('#f-da').value, groupe = $('#f-groupe').value, date = $('#f-date').value;
+    if (!da || !groupe || !date) { alerte('#msg-creation', 'Module, groupe et date sont attendus.'); return; }
+    var fin = $('#f-fin').value || null;
+    if (fin && fin < date) { alerte('#msg-creation', 'La date de fin précède la date de début.'); return; }
+    b.disabled = true; b.textContent = 'Création…';
+    appeler('lms', 'creer_seance', {
+      p_da_code: da, p_groupe_code: groupe, p_date: date,
+      p_libelle: ($('#f-libelle').value || '').trim() || null,
+      p_heure_debut: $('#f-debut').value || '08:30',
+      p_heure_fin: $('#f-hfin').value || '16:30',
+      p_heure_cloture: $('#f-cloture').value || '18:30',
+      p_date_fin: fin
+    }).then(function (id) {
+      alerte('#msg-creation', 'Séance ' + id + ' créée.', 'ok');
+      $('#f-libelle').value = '';
+      return chargerSeances();
+    }).catch(function (e) { alerte('#msg-creation', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Créer la séance'; });
+  }
+
+  function viderFormulaire() {
+    $('#f-date').value = aujourdhui(); $('#f-fin').value = '';
+    $('#f-debut').value = '08:30'; $('#f-hfin').value = '16:30'; $('#f-cloture').value = '18:30';
+    $('#f-libelle').value = ''; $('#msg-creation').innerHTML = '';
+  }
+
+  function chargerSeances() {
+    return Promise.all([
+      lire('lms', 'v_seances?select=*&order=date_debut.desc,id.desc'),
+      lire('lms', 'sessions?select=id,formateur_id'),
+      lire('lms', 'formateurs?select=id,nom,prenom')
+    ]).then(function (r) {
+      SEANCES = r[0] || [];
+      var noms = {};
+      (r[2] || []).forEach(function (f) { noms[f.id] = f.nom + ' ' + f.prenom; });
+      FORMATEUR_SEANCE = {};
+      (r[1] || []).forEach(function (x) {
+        if (x.formateur_id) FORMATEUR_SEANCE[x.id] = noms[x.formateur_id] || '(inconnu)';
+      });
+      dessinerSeances(); return chargerOuvertes();
+    })
+      .catch(function (e) {
+        $('#liste').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  /* Une séance est ouverte si le jour tombe dans sa période et l'heure
+     entre l'ouverture et la clôture. Le serveur applique la même règle :
+     ceci n'est qu'un affichage. */
+  function estOuverte(s) {
+    var j = aujourdhui(), h = maintenant();
+    if (s.date_debut > j) return false;
+    if ((s.date_fin || s.date_debut) < j) return false;
+    return hhmm(s.heure_debut) <= h && h <= hhmm(s.heure_cloture);
+  }
+
+  function chargerOuvertes() {
+    var ouvertes = SEANCES.filter(estOuverte);
+    if (!ouvertes.length) {
+      $('#ouvertes').innerHTML = '<p class="muted">Aucune séance ouverte en ce moment.</p>';
+      return Promise.resolve();
+    }
+    var ids = ouvertes.map(function (s) { return s.id; }).join(',');
+    return lire('lms', 'v_suivi_jour?select=*&session_id=in.(' + ids + ')')
+      .then(function (lignes) { dessinerOuvertes(ouvertes, lignes || []); })
+      .catch(function (e) {
+        $('#ouvertes').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  var CLASSE_ETAT = {
+    'terminé': 'ok', 'en cours': 'ok', 'réintégré': 'ok',
+    'attendu': 'neutre', 'connecté, sans activité': 'attention', 'en retard': 'attention',
+    'bloqué — à appeler': 'alerte', 'exclu': 'alerte'
+  };
+
+  function dessinerOuvertes(ouvertes, lignes) {
+    var h = '';
+    ouvertes.forEach(function (s) {
+      var l = lignes.filter(function (x) { return x.session_id === s.id; });
+      var connectes = l.filter(function (x) { return x.arrivee; }).length;
+      var aAppeler = l.filter(function (x) { return x.etat === 'bloqué — à appeler'; }).length;
+      h += '<h3>' + echappe(s.da_libelle || s.libelle) +
+           '<span class="etiquette">' + echappe(s.groupes || '—') + '</span></h3>' +
+           '<p class="muted"><span class="compteur">' + connectes +
+           '<small> / ' + l.length + ' connectés</small></span>' +
+           (aAppeler ? ' &nbsp;·&nbsp; <span class="etat alerte">' + aAppeler + ' à appeler</span>' : '') +
+           ' &nbsp;·&nbsp; ' + hhmm(s.heure_debut) + ' – ' + hhmm(s.heure_cloture) + '</p>';
+      if (!l.length) { h += '<p class="muted">Aucun stagiaire inscrit à cette séance.</p>'; return; }
+      h += '<table><tr><th>Stagiaire</th><th>Arrivée</th><th>Dernière activité</th>' +
+           '<th>Étapes</th><th>État</th><th>Téléphone</th></tr>';
+      l.sort(function (a, b2) { return String(a.nom || '').localeCompare(String(b2.nom || '')); })
+       .forEach(function (x) {
+        h += '<tr><td>' + echappe(x.nom) + ' ' + echappe(x.prenom) + '</td>' +
+             '<td>' + echappe(x.arrivee || '—') + '</td>' +
+             '<td>' + echappe(x.derniere_activite || '—') + '</td>' +
+             '<td>' + (x.etapes_faites || 0) + ' / ' + (x.etapes_total || 0) + '</td>' +
+             '<td><span class="etat ' + (CLASSE_ETAT[x.etat] || 'neutre') + '">' +
+                 echappe(x.etat) + '</span></td>' +
+             '<td>' + echappe(x.telephone || '—') + '</td></tr>';
+      });
+      h += '</table>';
+    });
+    $('#ouvertes').innerHTML = h;
+  }
+
+  function dessinerSeances() {
+    var passees = $('#bas-passees').checked, test = $('#bas-test').checked, auj = aujourdhui();
+    var vues = SEANCES.filter(function (s) {
+      if (!test && s.est_test) return false;
+      if (!passees && (s.date_fin || s.date_debut) < auj) return false;
+      return true;
+    });
+    if (!vues.length) {
+      $('#liste').innerHTML = '<p class="muted">Aucune séance à afficher. ' +
+        'Les séances passées et les séances de test sont masquées par défaut.</p>';
+      return;
+    }
+    var h = '<table><tr><th>Date</th><th>Module</th><th>Groupe</th><th>Horaires</th>' +
+            '<th>Inscrits</th><th>Formateur</th><th></th></tr>';
+    vues.forEach(function (s) {
+      var fenetre = s.date_fin && s.date_fin !== s.date_debut;
+      var classes = [];
+      if (s.est_test) classes.push('test');
+      if ((s.date_fin || s.date_debut) < auj) classes.push('passee');
+      h += '<tr class="' + classes.join(' ') + '">' +
+           '<td>' + echappe(dateCourte(s.date_debut)) +
+             (fenetre ? ' → ' + echappe(dateCourte(s.date_fin)) + '<span class="etiquette">fenêtre</span>' : '') +
+             (estOuverte(s) ? '<span class="etat ok" style="margin-left:.4rem">ouverte</span>' : '') + '</td>' +
+           '<td>' + echappe(s.da_libelle || s.da_code) + '</td>' +
+           '<td>' + echappe(s.groupes || '—') + '</td>' +
+           '<td>' + echappe(hhmm(s.heure_debut)) + ' – ' + echappe(hhmm(s.heure_cloture)) + '</td>' +
+           '<td>' + (s.inscrits == null ? '—' : s.inscrits) + '</td>' +
+           '<td>' + (FORMATEUR_SEANCE[s.id]
+                     ? echappe(FORMATEUR_SEANCE[s.id])
+                     : '<span class="etat attention">non affecté</span>') + '</td>' +
+           '<td><button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button></td></tr>';
+    });
+    $('#liste').innerHTML = h + '</table>';
+    Array.prototype.forEach.call($('#liste').querySelectorAll('[data-dupliquer]'), function (b) {
+      b.addEventListener('click', function () { dupliquer(+this.dataset.dupliquer); });
+    });
+  }
+
+  /* Dupliquer ne crée rien : le formulaire est prérempli, la date reste à
+     choisir. Une séance se relit avant d'être rejouée. */
+  function dupliquer(id) {
+    var s = SEANCES.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    $('#f-da').value = s.da_code;
+    if (s.groupes) $('#f-groupe').value = String(s.groupes).split(',')[0].trim();
+    $('#f-debut').value = hhmm(s.heure_debut) || '08:30';
+    $('#f-hfin').value = hhmm(s.heure_fin) || '16:30';
+    $('#f-cloture').value = hhmm(s.heure_cloture) || '18:30';
+    $('#f-fin').value = ''; $('#f-libelle').value = '';
+    $('#f-date').focus();
+    alerte('#msg-creation', 'Formulaire prérempli depuis la séance ' + id +
+           '. Choisissez la date, et le groupe si nécessaire.', 'ok');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Groupes
+   * ------------------------------------------------------------------ */
+  function creerGroupe() {
+    var b = $('#btn-creer-groupe');
+    var code = ($('#g-code').value || '').trim();
+    var libelle = ($('#g-libelle').value || '').trim();
+    var debut = $('#g-debut').value, fin = $('#g-fin').value;
+    if (!code || !libelle || !debut || !fin) {
+      alerte('#msg-groupe', 'Code, libellé, début et fin sont attendus.'); return;
+    }
+    if (fin < debut) { alerte('#msg-groupe', 'La date de fin précède la date de début.'); return; }
+    b.disabled = true; b.textContent = 'Création…';
+    appeler('lms', 'creer_groupe', {
+      p_code: code, p_libelle: libelle, p_debut: debut, p_fin: fin, p_test: $('#g-test').checked
+    }).then(function () {
+      alerte('#msg-groupe', 'Groupe ' + code + ' créé.', 'ok');
+      $('#g-code').value = ''; $('#g-libelle').value = '';
+      return chargerReferences().then(dessinerGroupes);
+    }).catch(function (e) { alerte('#msg-groupe', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Créer le groupe'; });
+  }
+
+  function dessinerGroupes() {
+    var test = $('#bas-groupes-test').checked;
+    var vus = GROUPES.filter(function (g) { return test || !g.est_test; });
+    if (!vus.length) { $('#liste-groupes').innerHTML = '<p class="muted">Aucun groupe.</p>'; return; }
+    var h = '<table><tr><th>Code</th><th>Libellé</th><th>Période</th><th>Inscrits</th><th></th></tr>';
+    vus.forEach(function (g) {
+      h += '<tr class="' + (g.est_test ? 'test' : '') + '">' +
+           '<td>' + echappe(g.code_analytique) + (g.est_test ? '<span class="etiquette">test</span>' : '') + '</td>' +
+           '<td>' + echappe(g.libelle) + '</td>' +
+           '<td>' + echappe(dateCourte(g.date_debut)) + ' → ' + echappe(dateCourte(g.date_fin)) + '</td>' +
+           '<td>' + effectif(g.id) + '</td>' +
+           '<td><button class="btn-mini" data-voir="' + echappe(g.code_analytique) + '">Voir les inscrits</button></td>' +
+           '</tr>';
+    });
+    $('#liste-groupes').innerHTML = h + '</table>';
+    Array.prototype.forEach.call($('#liste-groupes').querySelectorAll('[data-voir]'), function (b) {
+      b.addEventListener('click', function () {
+        $('#s-groupe').value = this.dataset.voir;
+        ouvrirOnglet('stagiaires');
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Stagiaires
+   * ------------------------------------------------------------------ */
+  function groupeChoisi() {
+    var code = $('#s-groupe').value;
+    return GROUPES.filter(function (g) { return g.code_analytique === code; })[0] || null;
+  }
+
+  function chargerStagiaires() {
+    var g = groupeChoisi();
+    if (!g) {
+      $('#liste-stagiaires').innerHTML = '<p class="muted">Aucun groupe choisi.</p>';
+      $('#resume-groupe').textContent = '';
+      return;
+    }
+    $('#resume-groupe').textContent = g.libelle + ' — du ' + dateCourte(g.date_debut) +
+      ' au ' + dateCourte(g.date_fin) + ' · ' + effectif(g.id) + ' inscrit(s)';
+    var ins = INSCRIPTIONS.filter(function (i) { return i.groupe_id === g.id; });
+    if (!ins.length) {
+      $('#liste-stagiaires').innerHTML = '<p class="muted">Aucun inscrit dans ce groupe.</p>';
+      return;
+    }
+    var ids = ins.map(function (i) { return '"' + i.stagiaire_id + '"'; }).join(',');
+    lire('lms', 'stagiaires?select=id,identifiant,nom,prenom,email,telephone,actif,user_id' +
+                '&id=in.(' + ids + ')&order=nom')
+      .then(function (d) { STAGIAIRES = d || []; dessinerStagiaires(ins); })
+      .catch(function (e) {
+        $('#liste-stagiaires').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  function dessinerStagiaires(ins) {
+    var parId = {};
+    ins.forEach(function (i) { parId[i.stagiaire_id] = i; });
+    var h = '<table><tr><th>Identifiant</th><th>Nom</th><th>Compte de connexion</th>' +
+            '<th>Téléphone</th><th>Compte créé</th><th>Sortie</th></tr>';
+    STAGIAIRES.forEach(function (s) {
+      var i = parId[s.id] || {};
+      h += '<tr class="' + (i.sortie_le ? 'sorti' : '') + '">' +
+           '<td>' + echappe(s.identifiant) + '</td>' +
+           '<td>' + echappe(s.nom) + ' ' + echappe(s.prenom) + '</td>' +
+           '<td>' + echappe(s.email || '—') + '</td>' +
+           '<td>' + echappe(s.telephone || '—') + '</td>' +
+           '<td>' + (s.user_id ? '<span class="etat ok">oui</span>'
+                               : '<span class="etat attention">à créer</span>') + '</td>' +
+           '<td>' + (i.sortie_le ? echappe(dateCourte(i.sortie_le)) +
+                     (i.motif_sortie ? ' — ' + echappe(i.motif_sortie) : '') : '—') + '</td></tr>';
+    });
+    $('#liste-stagiaires').innerHTML = h + '</table>';
+  }
+
+  /* L'import écrit sans repasse : la fonction analyse le texte puis
+     enchaîne sur importer_stagiaires. Le compte rendu est donc un
+     constat, pas un brouillon — on le dit à l'écran. */
+  function importer() {
+    var g = groupeChoisi();
+    if (!g) { alerte('#msg-import', 'Choisissez un groupe.'); return; }
+    var texte = $('#im-texte').value || '';
+    if (!texte.trim()) { alerte('#msg-import', 'Collez les lignes de votre feuille.'); return; }
+    var b = $('#btn-importer'); b.disabled = true; b.textContent = 'Import…';
+    $('#resultat-import').innerHTML = '';
+    appeler('lms', 'importer_colle', { p_groupe_code: g.code_analytique, p_texte: texte })
+      .then(function (lignes) {
+        lignes = lignes || [];
+        alerte('#msg-import', lignes.length + ' ligne(s) traitée(s) pour le groupe ' +
+               g.code_analytique + '.', 'ok');
+        var h = '<table><tr><th>Identifiant</th><th>Nom</th><th>Prénom</th>' +
+                '<th>Téléphone</th><th>État</th></tr>';
+        lignes.forEach(function (l) {
+          h += '<tr><td>' + echappe(l.identifiant) + '</td><td>' + echappe(l.nom) + '</td>' +
+               '<td>' + echappe(l.prenom) + '</td><td>' + echappe(l.telephone || '—') + '</td>' +
+               '<td>' + echappe(l.etat) + '</td></tr>';
+        });
+        $('#resultat-import').innerHTML = h + '</table>';
+        return chargerReferences().then(chargerStagiaires);
+      })
+      .catch(function (e) { alerte('#msg-import', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Importer dans le groupe'; });
+  }
+
+  /* Deux temps : on regarde d'abord ce qui serait fait, on exécute
+     ensuite. Les mots de passe s'affichent en clair — c'est nécessaire
+     pour les remettre aux stagiaires, mais l'écran n'est pas fait pour
+     rester ouvert. */
+  function comptes(pourDeVrai) {
+    var g = groupeChoisi();
+    if (!g) { alerte('#msg-comptes', 'Choisissez un groupe.'); return; }
+    if (pourDeVrai && !window.confirm(
+          'Créer les comptes de connexion du groupe ' + g.code_analytique + ' ?\n\n' +
+          'Les comptes déjà créés ne seront pas modifiés.')) return;
+    var b = pourDeVrai ? $('#btn-comptes-vrai') : $('#btn-comptes-blanc');
+    var libelle = b.textContent;
+    b.disabled = true; b.textContent = 'En cours…';
+    $('#resultat-comptes').innerHTML = '';
+    appeler('lms', 'creer_comptes', { p_groupe_code: g.code_analytique, p_pour_de_vrai: !!pourDeVrai })
+      .then(function (lignes) {
+        lignes = lignes || [];
+        alerte('#msg-comptes', pourDeVrai
+          ? lignes.length + ' compte(s) traité(s). Notez les mots de passe : ils ne seront plus affichés.'
+          : lignes.length + ' ligne(s) — rien n\'a été écrit.', 'ok');
+        var h = '<table><tr><th>Identifiant</th><th>Compte</th><th>Mot de passe</th>' +
+                '<th>Résultat</th></tr>';
+        lignes.forEach(function (l) {
+          var ignore = /^ignoré/.test(l.resultat || '');
+          h += '<tr><td>' + echappe(l.identifiant) + '</td>' +
+               '<td>' + echappe(l.compte || '—') + '</td>' +
+               '<td class="secret">' + echappe(ignore ? '—' : (l.mot_de_passe || '—')) + '</td>' +
+               '<td><span class="etat ' + (ignore ? 'alerte' : 'ok') + '">' +
+                   echappe(l.resultat) + '</span></td></tr>';
+        });
+        $('#resultat-comptes').innerHTML = h + '</table>';
+        if (pourDeVrai) return chargerReferences().then(chargerStagiaires);
+      })
+      .catch(function (e) { alerte('#msg-comptes', e.message); })
+      .then(function () { b.disabled = false; b.textContent = libelle; });
+  }
+
+
+  /* ------------------------------------------------------------------ *
+   * Affectation d'un formateur
+   * ------------------------------------------------------------------ */
+  function affecter() {
+    var email = $('#a-formateur').value;
+    var da = $('#a-da').value, groupe = $('#a-groupe').value;
+    if (!email || !da || !groupe) {
+      alerte('#msg-affectation', 'Formateur, module et groupe sont attendus.'); return;
+    }
+    var b = $('#btn-affecter'); b.disabled = true; b.textContent = 'Affectation…';
+    appeler('lms', 'affecter_formateur', {
+      p_email: email, p_da_code: da, p_groupe_code: groupe
+    }).then(function (n) {
+      alerte('#msg-affectation', n + ' séance(s) affectée(s).', 'ok');
+      return chargerSeances();
+    }).catch(function (e) { alerte('#msg-affectation', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Affecter'; });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Copies
+   * ------------------------------------------------------------------ */
+  function chargerCopies() {
+    return lire('eval', 'v_resultats?select=*&order=soumise_le.desc')
+      .then(function (d) {
+        /* Tri sur l'horodatage serveur, le seul qui dise l'ordre réel du
+           parcours : la date de la séance peut être modifiée après coup. */
+        RESULTATS = (d || []).sort(function (a, b2) {
+          return String(b2.soumise_le || '').localeCompare(String(a.soumise_le || ''));
+        });
+        var vues = {}, ordre = [];
+        RESULTATS.forEach(function (r) {
+          var cle = r.seance + ' — ' + r.date_seance;
+          if (!vues[cle]) { vues[cle] = true; ordre.push({ cle: cle, r: r }); }
+        });
+        var avant = $('#cp-seance').value;
+        $('#cp-seance').innerHTML = '<option value="">Toutes les séances</option>' +
+          ordre.map(function (o) {
+            return '<option value="' + echappe(o.cle) + '">' + echappe(o.r.seance) +
+                   ' — ' + echappe(dateCourte(o.r.date_seance)) + '</option>';
+          }).join('');
+        if (avant) $('#cp-seance').value = avant;
+        dessinerCopies();
+      })
+      .catch(function (e) {
+        $('#liste-copies').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  function dessinerCopies() {
+    var q = ($('#cp-filtre').value || '').toLowerCase();
+    var seance = $('#cp-seance').value;
+    var vues = RESULTATS.filter(function (r) {
+      if (seance && (r.seance + ' — ' + r.date_seance) !== seance) return false;
+      if (!q) return true;
+      return [r.nom, r.prenom, r.seance, r.intitule, r.identifiant]
+        .join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    if (!vues.length) {
+      $('#liste-copies').innerHTML = '<p class="muted">Aucune copie remise, ou aucune que vous ayez le droit de voir.</p>';
+      return;
+    }
+    var h = '<table><tr><th>Remise</th><th>Séance</th><th>Stagiaire</th><th>Évaluation</th>' +
+            '<th>Score</th><th>Verdict</th><th></th></tr>';
+    vues.slice(0, 200).forEach(function (r) {
+      var classe = r.verdict === 'acquis' ? 'ok' : (r.verdict ? 'alerte' : 'neutre');
+      h += '<tr><td>' + echappe(horodate(r.soumise_le)) + '</td>' +
+           '<td>' + echappe(dateCourte(r.date_seance)) + '</td>' +
+           '<td>' + echappe(r.nom) + ' ' + echappe(r.prenom) + '</td>' +
+           '<td>' + echappe(r.intitule || r.etape) + '</td>' +
+           '<td>' + (r.score == null ? '—' : r.score + ' / ' + r.bareme) +
+             (r.pourcentage != null ? ' <span class="muted">(' + r.pourcentage + ' %)</span>' : '') + '</td>' +
+           '<td>' + (r.verdict ? '<span class="etat ' + classe + '">' + echappe(r.verdict) + '</span>' : '—') + '</td>' +
+           '<td><button class="btn-mini" data-copie="' + r.tentative + '">Ouvrir</button></td></tr>';
+    });
+    h += '</table>';
+    if (vues.length > 200) h += '<p class="muted">200 premières lignes affichées. Affinez le filtre.</p>';
+    $('#liste-copies').innerHTML = h;
+    Array.prototype.forEach.call($('#liste-copies').querySelectorAll('[data-copie]'), function (b) {
+      b.addEventListener('click', function () { ouvrirCopie(+this.dataset.copie); });
+    });
+  }
+
+  function ouvrirCopie(tentative) {
+    copieCourante = tentative;
+    var r = RESULTATS.filter(function (x) { return x.tentative === tentative; })[0] || {};
+    $('#titre-copie').textContent = (r.nom || '') + ' ' + (r.prenom || '') +
+      ' — ' + (r.intitule || r.etape || '');
+    $('#carte-copie').hidden = false;
+    $('#detail-copie').innerHTML = '<p class="muted">Chargement…</p>';
+    $('#an-note').value = ''; $('#an-commentaire').value = ''; $('#msg-annotation').innerHTML = '';
+
+    Promise.all([
+      lire('eval', 'v_copie?select=*&tentative=eq.' + tentative),
+      lire('eval', 'annotations?select=note,commentaire,created_at,auteur_id&tentative_id=eq.' +
+                   tentative + '&order=created_at.desc')
+    ]).then(function (res) {
+      var lignes = res[0] || [], notes = res[1] || [];
+      var h = '<table><tr><th>Question</th><th>Réponse donnée</th><th>Attendue</th>' +
+              '<th>Juste</th><th>Points</th></tr>';
+      lignes.forEach(function (l) {
+        h += '<tr><td>' + echappe(l.enonce || l.question) + '</td>' +
+             '<td>' + echappe(afficherJson(l.reponse_donnee)) + '</td>' +
+             '<td>' + echappe(afficherJson(l.reponse_attendue)) + '</td>' +
+             '<td>' + (l.juste === true ? '<span class="etat ok">oui</span>'
+                      : l.juste === false ? '<span class="etat alerte">non</span>'
+                      : '<span class="etat neutre">à corriger</span>') + '</td>' +
+             '<td>' + (l.points == null ? '—' : l.points) + '</td></tr>';
+      });
+      $('#detail-copie').innerHTML = lignes.length ? h + '</table>'
+        : '<p class="muted">Aucun détail disponible pour cette copie.</p>';
+
+      dessinerAnnotations(notes);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }).catch(function (e) {
+      $('#detail-copie').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+    });
+  }
+
+  function dessinerAnnotations(notes) {
+    $('#annotations-existantes').innerHTML = (notes && notes.length)
+      ? '<table><tr><th>Note</th><th>Commentaire</th><th>Posée le</th></tr>' +
+        notes.map(function (a) {
+          return '<tr><td>' + (a.note == null ? '—' : a.note) + '</td>' +
+                 '<td>' + echappe(a.commentaire || '—') + '</td>' +
+                 '<td>' + echappe(String(a.created_at || '').slice(0, 16).replace('T', ' ')) +
+                 '</td></tr>';
+        }).join('') + '</table>'
+      : '<p class="muted">Aucune annotation pour l\'instant.</p>';
+  }
+
+  function rechargerAnnotations(tentative) {
+    return lire('eval', 'annotations?select=note,commentaire,created_at,auteur_id&tentative_id=eq.' +
+                        tentative + '&order=created_at.desc')
+      .then(dessinerAnnotations);
+  }
+
+  function afficherJson(v) {
+    if (v == null) return '—';
+    if (typeof v === 'object') {
+      if (v.texte != null) return v.texte;
+      if (v.valeur != null) return v.valeur;
+      if (v.index != null) return 'choix ' + (Array.isArray(v.index)
+        ? v.index.map(function (i) { return i + 1; }).join(' + ') : (v.index + 1));
+      if (v.correction) return 'correction ' + v.correction;
+      return JSON.stringify(v);
+    }
+    return String(v);
+  }
+
+  /* L'annotation s'ajoute au constat, elle ne le remplace pas. La base
+     refuse une annotation signée d'un autre que soi, et sur une séance
+     que l'on n'anime pas. */
+  function annoter() {
+    if (!copieCourante) return;
+    if (!moi || !moi.id) { alerte('#msg-annotation', 'Fiche formateur introuvable.'); return; }
+    var note = $('#an-note').value;
+    var commentaire = ($('#an-commentaire').value || '').trim();
+    if (note === '' && !commentaire) {
+      alerte('#msg-annotation', 'Une note, un commentaire, ou les deux.'); return;
+    }
+    var b = $('#btn-annoter'); b.disabled = true; b.textContent = 'Enregistrement…';
+    fetch(URL_PROJET + '/rest/v1/annotations', {
+      method: 'POST',
+      headers: (function () {
+        var h = entetes('eval', true); h['Prefer'] = 'return=minimal'; return h;
+      })(),
+      body: JSON.stringify({
+        tentative_id: copieCourante, auteur_id: moi.id,
+        note: note === '' ? null : Number(note),
+        commentaire: commentaire || null
+      })
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) {
+        var d = null; try { d = JSON.parse(t); } catch (e) {}
+        throw new Error((d && (d.message || d.hint)) || ('Erreur ' + r.status));
+      });
+      var t = copieCourante;
+      $('#an-note').value = ''; $('#an-commentaire').value = '';
+      return rechargerAnnotations(t).then(function () {
+        alerte('#msg-annotation', 'Annotation enregistrée.', 'ok');
+      });
+    }).catch(function (e) { alerte('#msg-annotation', e.message); })
+      .then(function () { b.disabled = false; b.textContent = "Enregistrer l'annotation"; });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Résultats
+   * Deux niveaux : la synthèse par couple groupe / DA, puis la matrice
+   * stagiaires × étapes notées. Le pivot se fait ici et non en SQL :
+   * le nombre de colonnes dépend du DA, et une requête à colonnes
+   * variables imposerait du SQL dynamique pour un gain nul.
+   * ------------------------------------------------------------------ */
+  function note20(n) {
+    return n == null ? '' : Number(n).toFixed(2).replace('.', ',');
+  }
+  function classeNote(n) {
+    if (n == null) return 'vide';
+    return n >= SEUIL_BIEN ? 'bien' : (n >= SEUIL_MOYEN ? 'moyen' : 'faible');
+  }
+
+  function chargerResultats() {
+    return lire('eval', 'v_synthese_groupe_da?select=*')
+      .then(function (d) {
+        SYNTHESE = (d || []).sort(function (a, b2) {
+          return String(a.da_libelle).localeCompare(String(b2.da_libelle)) ||
+                 String(a.groupe).localeCompare(String(b2.groupe));
+        });
+        var avant = $('#r-da').value, vus = {}, opts = '';
+        SYNTHESE.forEach(function (s) {
+          if (vus[s.da_code]) return;
+          vus[s.da_code] = true;
+          opts += '<option value="' + echappe(s.da_code) + '">' +
+                  echappe(s.da_libelle) + '</option>';
+        });
+        $('#r-da').innerHTML = '<option value="">Tous les modules</option>' + opts;
+        if (avant) $('#r-da').value = avant;
+        dessinerSynthese();
+      })
+      .catch(function (e) {
+        $('#liste-synthese').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  function dessinerSynthese() {
+    var test = $('#bas-resultats-test').checked, da = $('#r-da').value;
+    var vues = SYNTHESE.filter(function (s) {
+      return (test || !s.est_test) && (!da || s.da_code === da);
+    });
+    if (!vues.length) {
+      $('#liste-synthese').innerHTML = '<p class="muted">Aucun r\u00e9sultat. ' +
+        'Si vous attendiez le groupe de recette, cochez \u00ab Afficher les groupes de test \u00bb.</p>';
+      $('#carte-matrice').hidden = true;
+      return;
+    }
+    var h = '<table><tr><th>Groupe</th><th>Module</th><th>Inscrits</th><th>Commenc\u00e9</th>' +
+            '<th>Termin\u00e9</th><th>Sans trace</th><th>Moyenne</th><th>Ach\u00e8vement</th><th></th></tr>';
+    vues.forEach(function (s) {
+      h += '<tr' + (s.est_test ? ' class="test"' : '') + '>' +
+           '<td>' + echappe(s.groupe) + '<span class="etiquette">' +
+             echappe(s.code_analytique) + '</span></td>' +
+           '<td>' + echappe(s.da_libelle) + '</td>' +
+           '<td>' + s.inscrits + '</td>' +
+           '<td>' + s.ont_commence + '</td>' +
+           '<td>' + s.ont_termine + '</td>' +
+           '<td>' + (s.sans_trace > 0
+             ? '<span class="etat attention">' + s.sans_trace + '</span>' : '0') + '</td>' +
+           '<td><strong>' + note20(s.moyenne_promotion) + '</strong></td>' +
+           '<td>' + (s.taux_achevement == null ? '\u2014' : s.taux_achevement + ' %') + '</td>' +
+           '<td><button class="btn-mini" data-groupe="' + s.groupe_id +
+             '" data-da="' + s.da_id + '">D\u00e9tail</button></td></tr>';
+    });
+    $('#liste-synthese').innerHTML = h + '</table>';
+    Array.prototype.forEach.call($('#liste-synthese').querySelectorAll('[data-groupe]'),
+      function (b) {
+        b.addEventListener('click', function () {
+          ouvrirMatrice(+this.dataset.groupe, +this.dataset.da);
+        });
+      });
+  }
+
+  function ouvrirMatrice(groupeId, daId) {
+    $('#carte-matrice').hidden = false;
+    $('#detail-matrice').innerHTML = '<p class="muted">Chargement\u2026</p>';
+    lire('eval', 'v_notes_etape?select=*&groupe_id=eq.' + groupeId +
+                 '&da_id=eq.' + daId + '&order=nom.asc,prenom.asc,rang.asc')
+      .then(function (d) {
+        MATRICE = d || [];
+        if (!MATRICE.length) {
+          $('#detail-matrice').innerHTML = '<p class="muted">Aucune donn\u00e9e pour ce groupe.</p>';
+          return;
+        }
+        MATRICE_META = { groupe: MATRICE[0].groupe, da: MATRICE[0].da_libelle,
+                         code: MATRICE[0].code_analytique };
+        $('#titre-matrice').textContent = MATRICE_META.groupe + ' \u2014 ' + MATRICE_META.da;
+        dessinerMatrice();
+      })
+      .catch(function (e) {
+        $('#detail-matrice').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  /* Colonnes dans l'ordre du parcours, lignes dans l'ordre alphabétique.
+     Les cases vides existent en base : la vue produit le produit complet
+     inscrits × étapes notées. */
+  function pivoter() {
+    var cols = [], vusCol = {}, lignes = [], vusStag = {};
+    MATRICE.forEach(function (r) {
+      if (!vusCol[r.etape_id]) {
+        vusCol[r.etape_id] = true;
+        cols.push({ id: r.etape_id, rang: r.rang, colonne: r.colonne,
+                    titre: r.etape_titre, questions: r.nb_questions });
+      }
+      if (!vusStag[r.stagiaire_id]) {
+        vusStag[r.stagiaire_id] = { civilite: r.civilite, nom: r.nom, prenom: r.prenom,
+                                    sorti: r.sorti, motif: r.motif_sortie, cellules: {} };
+        lignes.push(vusStag[r.stagiaire_id]);
+      }
+      vusStag[r.stagiaire_id].cellules[r.etape_id] =
+        { note: r.note_20, score: r.score_auto, bareme: r.bareme_total,
+          tentative: r.tentative_id, titre: r.etape_titre };
+    });
+    cols.sort(function (a, b2) { return a.rang - b2.rang; });
+    return { cols: cols, lignes: lignes };
+  }
+
+  function dessinerMatrice() {
+    var p = pivoter(), cols = p.cols, lignes = p.lignes;
+    var h = '<table><tr><th>Civilit\u00e9</th><th>Nom</th><th>Pr\u00e9nom</th>';
+    cols.forEach(function (c) {
+      h += '<th class="col-note" title="' + echappe(c.titre) + '">' + echappe(c.colonne) + '</th>';
+    });
+    h += '<th class="col-note">Moyenne /20</th><th class="col-note">Achev\u00e9</th></tr>';
+    h += '<tr class="questions"><td colspan="3">Questions</td>';
+    cols.forEach(function (c) { h += '<td>' + c.questions + '</td>'; });
+    h += '<td></td><td></td></tr>';
+
+    var totaux = {}, faits = 0, possibles = 0, moyennes = [];
+    lignes.forEach(function (l) {
+      var points = 0, bareme = 0, nb = 0;
+      var ligne = '<tr' + (l.sorti ? ' class="sorti"' : '') + '>' +
+        '<td>' + echappe(l.civilite || '') + '</td>' +
+        '<td><strong>' + echappe(l.nom) + '</strong>' +
+        (l.sorti ? '<span class="etiquette">sorti' +
+          (l.motif ? ' \u2014 ' + echappe(l.motif) : '') + '</span>' : '') + '</td>' +
+        '<td>' + echappe(l.prenom) + '</td>';
+      cols.forEach(function (c) {
+        var cel = l.cellules[c.id] || {};
+        possibles++;
+        if (cel.note != null) {
+          points += Number(cel.score); bareme += Number(cel.bareme); nb++; faits++;
+          (totaux[c.id] = totaux[c.id] || []).push(Number(cel.note));
+        } else if (cel.tentative) {
+          nb++; faits++;   /* rédaction remise, non notée : achevée sans note */
+        }
+        ligne += '<td class="note ' + classeNote(cel.note) +
+          (cel.tentative ? ' cliquable" data-tentative="' + cel.tentative +
+            '" data-libelle="' + echappe(l.nom + ' ' + l.prenom + ' \u2014 ' + c.titre) + '"' : '"') +
+          '>' + (cel.note == null ? (cel.tentative ? '\u2713' : '\u2014') : note20(cel.note)) + '</td>';
+      });
+      /* Pondérée au barème : le QCM final à 18 points pèse plus qu'un
+         exercice à 5. */
+      var moy = bareme ? points / bareme * 20 : null;
+      if (moy != null) moyennes.push(moy);
+      ligne += '<td class="note ' + classeNote(moy) + '" title="' + points + ' / ' + bareme +
+               ' points">' + (moy == null ? '\u2014' : note20(moy)) + '</td>' +
+               '<td class="note">' + nb + ' / ' + cols.length + '</td></tr>';
+      h += ligne;
+    });
+
+    h += '<tr class="total"><td colspan="3">Moyenne de la promotion</td>';
+    cols.forEach(function (c) {
+      var t = totaux[c.id];
+      h += '<td class="note">' + (t && t.length
+        ? note20(t.reduce(function (a, b2) { return a + b2; }, 0) / t.length) : '\u2014') + '</td>';
+    });
+    h += '<td class="note">' + (moyennes.length
+      ? note20(moyennes.reduce(function (a, b2) { return a + b2; }, 0) / moyennes.length) : '\u2014') +
+      '</td><td class="note">' +
+      (possibles ? Math.round(100 * faits / possibles) + ' %' : '\u2014') + '</td></tr></table>';
+
+    $('#detail-matrice').innerHTML = h;
+    Array.prototype.forEach.call($('#detail-matrice').querySelectorAll('[data-tentative]'),
+      function (c) {
+        c.addEventListener('click', function () {
+          var id = +this.dataset.tentative, libelle = this.dataset.libelle;
+          ouvrirOnglet('copies');
+          ouvrirCopie(id);
+          $('#titre-copie').textContent = libelle;
+        });
+      });
+  }
+
+  /* Point-virgule et virgule décimale : c'est ce qu'attend Excel en
+     configuration française. Le BOM évite les accents cassés. */
+  function exporterMatrice() {
+    if (!MATRICE.length) return;
+    var p = pivoter(), l = [];
+    l.push(['Civilit\u00e9', 'Nom', 'Pr\u00e9nom'].concat(
+      p.cols.map(function (c) { return c.colonne; }), ['Moyenne /20', 'Achev\u00e9']));
+    l.push(['', '', 'Questions'].concat(
+      p.cols.map(function (c) { return c.questions; }), ['', '']));
+    p.lignes.forEach(function (li) {
+      var points = 0, bareme = 0, nb = 0;
+      var cells = p.cols.map(function (c) {
+        var cel = li.cellules[c.id] || {};
+        if (cel.note != null) {
+          points += Number(cel.score); bareme += Number(cel.bareme); nb++;
+        } else if (cel.tentative) {
+          nb++;
+          return 'remis';
+        }
+        return note20(cel.note);
+      });
+      l.push([li.civilite || '', li.nom, li.prenom].concat(cells,
+        [bareme ? note20(points / bareme * 20) : '', nb + ' / ' + p.cols.length]));
+    });
+    var csv = l.map(function (r) {
+      return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';');
+    }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'resultats_' + (MATRICE_META ? MATRICE_META.code : 'export') + '_' +
+                 aujourdhui() + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Onglet Personnel
+   * ------------------------------------------------------------------ */
+  function chargerPersonnel() {
+    return lire('lms', 'formateurs?select=id,nom,prenom,email,role,actif,user_id&order=nom')
+      .then(function (d) {
+        PERSONNEL = d || [];
+        $('#a-formateur').innerHTML = PERSONNEL
+          .filter(function (f) { return f.actif && f.email; })
+          .map(function (f) {
+            return '<option value="' + echappe(f.email) + '">' + echappe(f.nom) + ' ' +
+                   echappe(f.prenom) + ' — ' + echappe(f.role) + '</option>';
+          }).join('') || '<option value="">Aucun formateur actif</option>';
+        var h = '<table><tr><th>Nom</th><th>Adresse</th><th>Rôle</th><th>Compte lié</th></tr>';
+        PERSONNEL.forEach(function (f) {
+          h += '<tr><td>' + echappe(f.nom) + ' ' + echappe(f.prenom) + '</td>' +
+               '<td>' + echappe(f.email || '—') + '</td>' +
+               '<td>' + echappe(f.role) + '</td>' +
+               '<td>' + (f.user_id ? '<span class="etat ok">oui</span>'
+                                   : '<span class="etat alerte">non</span>') + '</td></tr>';
+        });
+        $('#liste-personnel').innerHTML = PERSONNEL.length ? h + '</table>'
+          : '<p class="muted">Aucun membre du personnel enregistré.</p>';
+      })
+      .catch(function (e) {
+        $('#liste-personnel').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+
+  function enroler() {
+    var email = ($('#p-email').value || '').trim();
+    var nom = ($('#p-nom').value || '').trim();
+    var prenom = ($('#p-prenom').value || '').trim();
+    if (!email || !nom || !prenom) {
+      alerte('#msg-personnel', 'Adresse, nom et prénom sont attendus.'); return;
+    }
+    var b = $('#btn-enroler'); b.disabled = true; b.textContent = 'Enrôlement…';
+    appeler('lms', 'enroler_personnel', {
+      p_email: email, p_nom: nom, p_prenom: prenom, p_role: $('#p-role').value
+    }).then(function () {
+      alerte('#msg-personnel', nom + ' ' + prenom + ' enrôlé comme ' + $('#p-role').value + '.', 'ok');
+      $('#p-email').value = ''; $('#p-nom').value = ''; $('#p-prenom').value = '';
+      return chargerPersonnel();
+    }).catch(function (e) { alerte('#msg-personnel', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Enrôler'; });
+  }
+
+  function inscrire() {
+    var g = groupeChoisi();
+    if (!g) { alerte('#msg-inscrire', 'Choisissez un groupe.'); return; }
+    var ident = ($('#i-identifiant').value || '').trim();
+    if (!ident) { alerte('#msg-inscrire', "Identifiant du stagiaire attendu."); return; }
+    var b = $('#btn-inscrire'); b.disabled = true; b.textContent = 'Inscription…';
+    appeler('lms', 'inscrire', {
+      p_groupe_code: g.code_analytique, p_identifiant: ident,
+      p_date_entree: $('#i-date').value || aujourdhui()
+    }).then(function () {
+      alerte('#msg-inscrire', ident + ' inscrit au groupe ' + g.code_analytique + '.', 'ok');
+      $('#i-identifiant').value = '';
+      return chargerReferences().then(chargerStagiaires);
+    }).catch(function (e) { alerte('#msg-inscrire', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Inscrire'; });
+  }
+
+  function sortir() {
+    var g = groupeChoisi();
+    if (!g) { alerte('#msg-sortie', 'Choisissez un groupe.'); return; }
+    var ident = ($('#o-identifiant').value || '').trim();
+    var motif = ($('#o-motif').value || '').trim();
+    if (!ident) { alerte('#msg-sortie', "Identifiant du stagiaire attendu."); return; }
+    if (!motif) { alerte('#msg-sortie', 'Le motif est obligatoire : il reste au dossier.'); return; }
+    var b = $('#btn-sortie'); b.disabled = true; b.textContent = 'Enregistrement…';
+    appeler('lms', 'sortir', {
+      p_groupe_code: g.code_analytique, p_identifiant: ident,
+      p_date_sortie: $('#o-date').value || aujourdhui(), p_motif: motif
+    }).then(function () {
+      alerte('#msg-sortie', 'Sortie de ' + ident + ' enregistrée.', 'ok');
+      $('#o-identifiant').value = ''; $('#o-motif').value = '';
+      return chargerReferences().then(chargerStagiaires);
+    }).catch(function (e) { alerte('#msg-sortie', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Enregistrer la sortie'; });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Reprise d'une session ouverte
+   * ------------------------------------------------------------------ */
+  if (PARTAGE) {
+    PARTAGE.auth.onAuthStateChange(function (evt, sess) {
+      if (sess && sess.access_token) jeton = sess.access_token;
+      else if (evt === 'SIGNED_OUT') location.replace('index.html');
+    });
+    PARTAGE.auth.getSession().then(function (r) {
+      var sess = r.data && r.data.session;
+      if (!sess) { versConnexion(); return; }
+      jeton = sess.access_token;
+      monUid = sess.user && sess.user.id;
+      return verifierPersonnel();
+    }).catch(function (e) {
+      document.body.innerHTML = '<div class="connexion" style="max-width:30rem;margin:4rem auto;background:#fff;padding:2rem;border:1px solid #E8DCE5">' +
+        '<h2>Accès impossible</h2><p class="muted">' + echappe(e.message || e) + '</p>' +
+        '<p><a href="index.html">Revenir à l\'écran de connexion</a></p></div>';
+    });
+    return;
+  }
+
+  var repris = sessionStorage.getItem(CLES.jeton);
+  if (repris) {
+    jeton = repris;
+    verifierPersonnel().catch(function () {
+      jeton = null; sessionStorage.removeItem(CLES.jeton); demarrerConnexion();
+    });
+  } else {
+    demarrerConnexion();
+  }
+})();
+</script>
+</body>
+</html>
