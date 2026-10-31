@@ -194,7 +194,12 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     </section>
 
     <section id="vue-groupes" hidden>
-      <div class="carte">
+      <div class="sous-onglets" role="tablist">
+        <button data-sous="liste-groupes" class="actif">Groupes</button>
+        <button data-sous="creer-groupe">Créer un groupe</button>
+      </div>
+
+      <div class="carte" data-panneau="creer-groupe" hidden>
         <h2>Créer un groupe</h2>
         <p class="sub">Le code analytique identifie la promotion et se qualifie par l'année — ARM-2610, A2-2026.</p>
         <div class="grille">
@@ -211,7 +216,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="msg-groupe"></div>
       </div>
 
-      <div class="carte">
+      <div class="carte" data-panneau="liste-groupes">
         <h2>Groupes</h2>
         <div class="actions" style="margin:0 0 .8rem">
           <label class="bascule"><input type="checkbox" id="bas-groupes-test"> Afficher les groupes de test</label>
@@ -653,7 +658,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
     $('#btn-creer').addEventListener('click', creerSeance);
     Array.prototype.forEach.call(document.querySelectorAll('.sous-onglets button'), function (b) {
-      b.addEventListener('click', function () { ouvrirSous(this.dataset.sous); });
+      b.addEventListener('click', function () { ouvrirSous(this.dataset.sous, this.closest('section')); });
     });
     $('#btn-vider').addEventListener('click', viderFormulaire);
     $('#btn-recharger').addEventListener('click', chargerSeances);
@@ -934,12 +939,13 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   }
 
   /* Sous-onglets de « Séances » : un seul bloc affiché à la fois. */
-  function ouvrirSous(nom) {
+  function ouvrirSous(nom, section) {
+    section = section || $('#vue-seances');
     if (nom === 'programmer' && modeFormateur()) nom = 'ouvertes';
-    Array.prototype.forEach.call(document.querySelectorAll('.sous-onglets button'), function (b) {
+    Array.prototype.forEach.call(section.querySelectorAll('.sous-onglets button'), function (b) {
       b.classList.toggle('actif', b.dataset.sous === nom);
     });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-panneau]'), function (p) {
+    Array.prototype.forEach.call(section.querySelectorAll('[data-panneau]'), function (p) {
       p.hidden = p.dataset.panneau !== nom || (modeFormateur() && p.classList.contains('gestion-seule'));
     });
   }
