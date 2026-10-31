@@ -120,7 +120,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
         <h2>Gérer l'organisme</h2>
         <p>Séances, groupes, stagiaires, comptes du personnel, résultats et copies.</p>
       </a>
-      <a class="espace" href="admin.html?espace=formateurs">
+      <a class="espace" id="tuile-formateurs" href="admin.html?espace=formateurs">
         <span class="num">Formateurs</span>
         <h2>Suivre mes groupes</h2>
         <p>Séances, résultats par stagiaire et correction des copies.</p>
@@ -201,10 +201,24 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1rem 1
         }
         $('#tuile-admin').hidden = !gestionnaire;
         $('#qui-mail').textContent = (session.user && session.user.email) || '';
-        return lms.from('formateurs').select('prenom').eq('user_id', session.user.id).limit(1)
+        return lms.from('formateurs').select('id,prenom').eq('user_id', session.user.id).limit(1)
           .then(function (f) {
-            $('#qui').textContent = (f.data && f.data[0] && f.data[0].prenom) || '';
-            montrer('#vue-choix');
+            var fiche = f.data && f.data[0];
+            $('#qui').textContent = (fiche && fiche.prenom) || '';
+            /* Un gestionnaire n'a l'espace Formateurs que s'il anime
+               lui-même au moins une séance : sinon il ferait doublon
+               avec l'Administration. */
+            if (!gestionnaire || !fiche) { montrer('#vue-choix'); return; }
+            return lms.from('sessions').select('id').eq('formateur_id', fiche.id).limit(1)
+              .then(function (s) {
+                var anime = !!(s.data && s.data.length);
+                $('#tuile-formateurs').hidden = !anime;
+                if (anime) {
+                  $('#tuile-formateurs .num').textContent = 'Mes séances';
+                  $('#tuile-formateurs h2').textContent = 'Les séances que j\'anime';
+                }
+                montrer('#vue-choix');
+              });
           });
       });
     });

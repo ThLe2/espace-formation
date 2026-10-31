@@ -610,6 +610,17 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         if (a.dataset.espace === 'administration' && !estGestionnaire) a.hidden = true;
         a.classList.toggle('actif', a.dataset.espace === ESPACE);
       });
+      /* Pour un gestionnaire, « Formateurs » ferait doublon avec
+         l'Administration : on ne le propose, sous le nom « Mes séances »,
+         que s'il anime lui-même au moins une séance. */
+      if (estGestionnaire) {
+        var lien = document.querySelector('#espaces a[data-espace="formateurs"]');
+        lien.textContent = 'Mes séances';
+        lien.hidden = ESPACE !== 'formateurs';
+        if (moi) lire('lms', 'sessions?select=id&formateur_id=eq.' + moi.id + '&limit=1')
+          .then(function (d) { if (d && d.length) lien.hidden = false; })
+          .catch(function () {});
+      }
     } else {
       $('#role-espace').textContent = ESPACE === 'formateurs' ? 'Formateurs' : 'Back-office';
     }
