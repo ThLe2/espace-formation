@@ -33,6 +33,11 @@ nav{background:#fff;border-bottom:1px solid var(--trame);padding:0 1.2rem;displa
 nav button{background:none;border:0;border-bottom:3px solid transparent;padding:.7rem 1rem;
   font-family:inherit;font-size:.92rem;font-weight:600;color:var(--gris-moyen);cursor:pointer}
 nav button.actif{color:var(--prune-fonce);border-bottom-color:var(--prune)}
+.sous-onglets{display:flex;gap:.4rem;flex-wrap:wrap;margin:0 0 1rem}
+.sous-onglets button{background:#fff;border:1px solid var(--trame);border-radius:999px;padding:.4rem 1rem;
+  font-family:inherit;font-size:.86rem;font-weight:600;color:var(--gris-moyen);cursor:pointer}
+.sous-onglets button:hover{border-color:var(--prune);color:var(--prune-fonce)}
+.sous-onglets button.actif{background:var(--prune);border-color:var(--prune);color:#fff}
 main{max-width:1120px;margin:0 auto;padding:1.4rem 1.2rem 3rem}
 h2{font-size:1.05rem;color:var(--prune-fonce);margin:0 0 .2rem}
 h3{font-size:.95rem;color:var(--prune-fonce);margin:1.2rem 0 .4rem}
@@ -141,13 +146,19 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
   <main>
     <section id="vue-seances">
-      <div class="carte ouverte">
+      <div class="sous-onglets" role="tablist">
+        <button data-sous="ouvertes" class="actif">Séances ouvertes</button>
+        <button data-sous="programmer" class="gestion-seule">Programmer une séance</button>
+        <button data-sous="programmees">Séances programmées</button>
+      </div>
+
+      <div class="carte ouverte" data-panneau="ouvertes">
         <h2>Séances ouvertes</h2>
         <p class="sub">Ce qui se joue en ce moment.</p>
         <div id="ouvertes"></div>
       </div>
 
-      <div class="carte gestion-seule">
+      <div class="carte gestion-seule" data-panneau="programmer" hidden>
         <h2>Programmer une séance</h2>
         <div class="grille">
           <div><label for="f-da">Module (DA)</label><select id="f-da"></select></div>
@@ -170,8 +181,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="msg-creation"></div>
       </div>
 
-      <div class="carte">
+      <div class="carte" data-panneau="programmees" hidden>
         <h2>Séances programmées</h2>
+        <div id="msg-liste"></div>
         <div class="actions" style="margin:0 0 .8rem">
           <label class="bascule"><input type="checkbox" id="bas-passees"> Afficher les séances passées</label>
           <label class="bascule"><input type="checkbox" id="bas-test"> Afficher les séances de test</label>
@@ -640,6 +652,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     });
 
     $('#btn-creer').addEventListener('click', creerSeance);
+    Array.prototype.forEach.call(document.querySelectorAll('.sous-onglets button'), function (b) {
+      b.addEventListener('click', function () { ouvrirSous(this.dataset.sous); });
+    });
     $('#btn-vider').addEventListener('click', viderFormulaire);
     $('#btn-recharger').addEventListener('click', chargerSeances);
     $('#bas-passees').addEventListener('change', dessinerSeances);
@@ -822,6 +837,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
   function chargerOuvertes() {
     var ouvertes = SEANCES.filter(estOuverte);
+    var bo = document.querySelector('.sous-onglets [data-sous="ouvertes"]');
+    if (bo) bo.textContent = 'Séances ouvertes' + (ouvertes.length ? ' (' + ouvertes.length + ')' : '');
     if (!ouvertes.length) {
       $('#ouvertes').innerHTML = '<p class="muted">Aucune séance ouverte en ce moment.</p>';
       return Promise.resolve();
@@ -916,6 +933,17 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     });
   }
 
+  /* Sous-onglets de « Séances » : un seul bloc affiché à la fois. */
+  function ouvrirSous(nom) {
+    if (nom === 'programmer' && modeFormateur()) nom = 'ouvertes';
+    Array.prototype.forEach.call(document.querySelectorAll('.sous-onglets button'), function (b) {
+      b.classList.toggle('actif', b.dataset.sous === nom);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-panneau]'), function (p) {
+      p.hidden = p.dataset.panneau !== nom || (modeFormateur() && p.classList.contains('gestion-seule'));
+    });
+  }
+
   /* Changer le formateur d'une séance : l'affectation vaut pour toutes les
      séances du même module pour le(s) même(s) groupe(s). */
   function emailFormateur(id) {
@@ -940,8 +968,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
           return appeler('lms', 'affecter_formateur', { p_email: email, p_da_code: s.da_code, p_groupe_code: g });
         });
       }, Promise.resolve())
-        .then(function () { alerte('#msg-creation', 'Formateur modifié pour ' + (s.da_libelle || s.da_code) + '.', 'ok'); })
-        .catch(function (e) { alerte('#msg-creation', e.message); })
+        .then(function () { alerte('#msg-liste', 'Formateur modifié pour ' + (s.da_libelle || s.da_code) + '.', 'ok'); })
+        .catch(function (e) { alerte('#msg-liste', e.message); })
         .then(chargerSeances);
     };
   }
@@ -958,6 +986,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     $('#f-cloture').value = hhmm(s.heure_cloture) || '18:30';
     $('#f-fin').value = ''; $('#f-libelle').value = '';
     $('#f-formateur').value = emailFormateur(FORMATEUR_ID_SEANCE[s.id]) || '';
+    ouvrirSous('programmer');
     $('#f-date').focus();
     alerte('#msg-creation', 'Formulaire prérempli depuis la séance ' + id +
            '. Choisissez la date, et le groupe si nécessaire.', 'ok');
