@@ -152,6 +152,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div class="grille">
           <div><label for="f-da">Module (DA)</label><select id="f-da"></select></div>
           <div><label for="f-groupe">Groupe</label><select id="f-groupe"></select></div>
+          <div><label for="f-formateur">Formateur</label><select id="f-formateur"></select></div>
           <div><label for="f-date">Date</label><input id="f-date" type="date"></div>
           <div><label for="f-fin">Fin (si fenêtre)</label><input id="f-fin" type="date"></div>
           <div><label for="f-debut">Ouverture</label><input id="f-debut" type="time" value="08:30"></div>
@@ -163,22 +164,10 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div class="actions">
           <button class="btn" id="btn-creer">Créer la séance</button>
           <button class="btn btn-secondaire" id="btn-vider">Réinitialiser</button>
-          <span class="muted">Laissez « Fin » vide pour une séance d'une journée.</span>
+          <span class="muted">Laissez « Fin » vide pour une séance d'une journée.
+            Le formateur est celui de toutes les séances de ce module pour ce groupe.</span>
         </div>
         <div id="msg-creation"></div>
-      </div>
-
-      <div class="carte gestion-seule">
-        <h2>Affecter un formateur</h2>
-        <p class="sub">L'affectation porte sur toutes les séances d'un module pour un groupe —
-          pas séance par séance. Le formateur affecté pourra annoter les copies.</p>
-        <div class="grille">
-          <div><label for="a-formateur">Formateur</label><select id="a-formateur"></select></div>
-          <div><label for="a-da">Module (DA)</label><select id="a-da"></select></div>
-          <div><label for="a-groupe">Groupe</label><select id="a-groupe"></select></div>
-        </div>
-        <div class="actions"><button class="btn" id="btn-affecter">Affecter</button></div>
-        <div id="msg-affectation"></div>
       </div>
 
       <div class="carte">
@@ -423,7 +412,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   var SYNTHESE = [], MATRICE = [], MATRICE_META = null;
   /* Bornes des couleurs de la matrice, à ajuster si besoin. */
   var SEUIL_BIEN = 15, SEUIL_MOYEN = 12;
-  var FORMATEUR_SEANCE = {};
+  var FORMATEUR_SEANCE = {}, FORMATEUR_ID_SEANCE = {};
   /* Espace Formateurs : on ne montre que les séances auxquelles la
      personne connectée est affectée (et ce qui en découle). */
   var MES = null;            // { ids:{}, paires:{}, seances:[] }
@@ -661,7 +650,6 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     $('#i-date').value = aujourdhui();
     $('#o-date').value = aujourdhui();
 
-    $('#btn-affecter').addEventListener('click', affecter);
     $('#btn-recharger-copies').addEventListener('click', chargerCopies);
     $('#cp-filtre').addEventListener('input', dessinerCopies);
     $('#cp-seance').addEventListener('change', dessinerCopies);
@@ -707,9 +695,11 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     return Promise.all([
       lire('contenu', 'das?select=code,libelle&order=libelle'),
       lire('lms', 'groupes?select=id,code_analytique,libelle,date_debut,date_fin,est_test&order=date_debut.desc'),
-      lire('lms', 'inscriptions?select=groupe_id,stagiaire_id,periode,motif_sortie,sortie_le')
+      lire('lms', 'inscriptions?select=groupe_id,stagiaire_id,periode,motif_sortie,sortie_le'),
+      lire('lms', 'formateurs?select=id,nom,prenom,email,role,actif&order=nom')
     ]).then(function (r) {
       DAS = r[0] || []; GROUPES = r[1] || []; INSCRIPTIONS = r[2] || [];
+      remplirFormateurs(r[3] || []);
       $('#f-da').innerHTML = DAS.map(function (d) {
         return '<option value="' + echappe(d.code) + '">' + echappe(d.libelle) + '</option>';
       }).join('') || '<option value="">Aucun module en base</option>';
@@ -720,10 +710,22 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       var avant = $('#s-groupe').value;
       $('#f-groupe').innerHTML = opts;
       $('#s-groupe').innerHTML = opts;
-      $('#a-groupe').innerHTML = opts;
-      $('#a-da').innerHTML = $('#f-da').innerHTML;
       if (avant) $('#s-groupe').value = avant;
     });
+  }
+
+  /* Formateurs proposés à la programmation : comptes actifs avec adresse. */
+  var FORMATEURS = [];
+  function optionsFormateurs(choisi) {
+    return '<option value="">— Choisir le formateur —</option>' + FORMATEURS.map(function (f) {
+      return '<option value="' + echappe(f.email) + '"' + (f.email === choisi ? ' selected' : '') + '>' +
+             echappe(f.nom) + ' ' + echappe(f.prenom) + ' — ' + echappe(f.role) + '</option>';
+    }).join('');
+  }
+  function remplirFormateurs(liste) {
+    FORMATEURS = liste.filter(function (f) { return f.actif && f.email; });
+    var avant = $('#f-formateur').value;
+    $('#f-formateur').innerHTML = optionsFormateurs(avant);
   }
 
   function effectif(groupeId) {
@@ -736,7 +738,10 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   function creerSeance() {
     var b = $('#btn-creer');
     var da = $('#f-da').value, groupe = $('#f-groupe').value, date = $('#f-date').value;
-    if (!da || !groupe || !date) { alerte('#msg-creation', 'Module, groupe et date sont attendus.'); return; }
+    var formateur = $('#f-formateur').value;
+    if (!da || !groupe || !date || !formateur) {
+      alerte('#msg-creation', 'Module, groupe, formateur et date sont attendus.'); return;
+    }
     var fin = $('#f-fin').value || null;
     if (fin && fin < date) { alerte('#msg-creation', 'La date de fin précède la date de début.'); return; }
     b.disabled = true; b.textContent = 'Création…';
@@ -748,7 +753,16 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       p_heure_cloture: $('#f-cloture').value || '18:30',
       p_date_fin: fin
     }).then(function (id) {
-      alerte('#msg-creation', 'Séance ' + id + ' créée.', 'ok');
+      return appeler('lms', 'affecter_formateur', {
+        p_email: formateur, p_da_code: da, p_groupe_code: groupe
+      }).then(function () {
+        alerte('#msg-creation', 'Séance ' + id + ' créée et affectée à ' +
+               $('#f-formateur').selectedOptions[0].textContent.split(' — ')[0] + '.', 'ok');
+      }, function (e) {
+        alerte('#msg-creation', 'Séance ' + id + " créée, mais l'affectation du formateur a échoué : " +
+               e.message + ' Utilisez « Changer » dans la liste des séances.');
+      });
+    }).then(function () {
       $('#f-libelle').value = '';
       return chargerSeances();
     }).catch(function (e) { alerte('#msg-creation', e.message); })
@@ -771,9 +785,12 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       if (modeFormateur()) SEANCES = calculerMes(SEANCES, r[1]).seances;
       var noms = {};
       (r[2] || []).forEach(function (f) { noms[f.id] = f.nom + ' ' + f.prenom; });
-      FORMATEUR_SEANCE = {};
+      FORMATEUR_SEANCE = {}; FORMATEUR_ID_SEANCE = {};
       (r[1] || []).forEach(function (x) {
-        if (x.formateur_id) FORMATEUR_SEANCE[x.id] = noms[x.formateur_id] || '(inconnu)';
+        if (x.formateur_id) {
+          FORMATEUR_SEANCE[x.id] = noms[x.formateur_id] || '(inconnu)';
+          FORMATEUR_ID_SEANCE[x.id] = x.formateur_id;
+        }
       });
       dessinerSeances(); return chargerOuvertes();
     })
@@ -871,16 +888,51 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
            '<td>' + echappe(s.groupes || '—') + '</td>' +
            '<td>' + echappe(hhmm(s.heure_debut)) + ' – ' + echappe(hhmm(s.heure_cloture)) + '</td>' +
            '<td>' + (s.inscrits == null ? '—' : s.inscrits) + '</td>' +
-           '<td>' + (FORMATEUR_SEANCE[s.id]
+           '<td data-cellule-formateur="' + s.id + '">' + (FORMATEUR_SEANCE[s.id]
                      ? echappe(FORMATEUR_SEANCE[s.id])
-                     : '<span class="etat attention">non affecté</span>') + '</td>' +
+                     : '<span class="etat attention">non affecté</span>') +
+             (modeFormateur() ? '' : ' <button class="btn-mini" data-changer="' + s.id + '">Changer</button>') +
+             '</td>' +
            '<td>' + (modeFormateur() ? '' :
              '<button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button>') + '</td></tr>';
     });
     $('#liste').innerHTML = h + '</table>';
+    Array.prototype.forEach.call($('#liste').querySelectorAll('[data-changer]'), function (b) {
+      b.addEventListener('click', function () { changerFormateur(+this.dataset.changer); });
+    });
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-dupliquer]'), function (b) {
       b.addEventListener('click', function () { dupliquer(+this.dataset.dupliquer); });
     });
+  }
+
+  /* Changer le formateur d'une séance : l'affectation vaut pour toutes les
+     séances du même module pour le(s) même(s) groupe(s). */
+  function emailFormateur(id) {
+    var f = FORMATEURS.filter(function (x) { return x.id === id; })[0];
+    return f ? f.email : '';
+  }
+  function changerFormateur(id) {
+    var s = SEANCES.filter(function (x) { return x.id === id; })[0];
+    var td = document.querySelector('[data-cellule-formateur="' + id + '"]');
+    if (!s || !td) return;
+    td.innerHTML = '<select style="min-width:11rem">' + optionsFormateurs(emailFormateur(FORMATEUR_ID_SEANCE[id])) +
+      '</select> <button class="btn-mini" data-ok>OK</button> <button class="btn-mini" data-annuler>Annuler</button>';
+    td.querySelector('[data-annuler]').onclick = dessinerSeances;
+    td.querySelector('[data-ok]').onclick = function () {
+      var email = td.querySelector('select').value;
+      if (!email) return;
+      var groupes = String(s.groupes || '').split(',').map(function (g) { return g.trim(); })
+                      .filter(Boolean);
+      this.disabled = true; this.textContent = '…';
+      groupes.reduce(function (p, g) {
+        return p.then(function () {
+          return appeler('lms', 'affecter_formateur', { p_email: email, p_da_code: s.da_code, p_groupe_code: g });
+        });
+      }, Promise.resolve())
+        .then(function () { alerte('#msg-creation', 'Formateur modifié pour ' + (s.da_libelle || s.da_code) + '.', 'ok'); })
+        .catch(function (e) { alerte('#msg-creation', e.message); })
+        .then(chargerSeances);
+    };
   }
 
   /* Dupliquer ne crée rien : le formulaire est prérempli, la date reste à
@@ -894,6 +946,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     $('#f-hfin').value = hhmm(s.heure_fin) || '16:30';
     $('#f-cloture').value = hhmm(s.heure_cloture) || '18:30';
     $('#f-fin').value = ''; $('#f-libelle').value = '';
+    $('#f-formateur').value = emailFormateur(FORMATEUR_ID_SEANCE[s.id]) || '';
     $('#f-date').focus();
     alerte('#msg-creation', 'Formulaire prérempli depuis la séance ' + id +
            '. Choisissez la date, et le groupe si nécessaire.', 'ok');
@@ -1063,25 +1116,6 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       .then(function () { b.disabled = false; b.textContent = libelle; });
   }
 
-
-  /* ------------------------------------------------------------------ *
-   * Affectation d'un formateur
-   * ------------------------------------------------------------------ */
-  function affecter() {
-    var email = $('#a-formateur').value;
-    var da = $('#a-da').value, groupe = $('#a-groupe').value;
-    if (!email || !da || !groupe) {
-      alerte('#msg-affectation', 'Formateur, module et groupe sont attendus.'); return;
-    }
-    var b = $('#btn-affecter'); b.disabled = true; b.textContent = 'Affectation…';
-    appeler('lms', 'affecter_formateur', {
-      p_email: email, p_da_code: da, p_groupe_code: groupe
-    }).then(function (n) {
-      alerte('#msg-affectation', n + ' séance(s) affectée(s).', 'ok');
-      return chargerSeances();
-    }).catch(function (e) { alerte('#msg-affectation', e.message); })
-      .then(function () { b.disabled = false; b.textContent = 'Affecter'; });
-  }
 
   /* ------------------------------------------------------------------ *
    * Onglet Copies
@@ -1483,12 +1517,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     return lire('lms', 'formateurs?select=id,nom,prenom,email,role,actif,user_id&order=nom')
       .then(function (d) {
         PERSONNEL = d || [];
-        $('#a-formateur').innerHTML = PERSONNEL
-          .filter(function (f) { return f.actif && f.email; })
-          .map(function (f) {
-            return '<option value="' + echappe(f.email) + '">' + echappe(f.nom) + ' ' +
-                   echappe(f.prenom) + ' — ' + echappe(f.role) + '</option>';
-          }).join('') || '<option value="">Aucun formateur actif</option>';
+        remplirFormateurs(PERSONNEL);
         var h = '<table><tr><th>Nom</th><th>Adresse</th><th>Rôle</th><th>Compte lié</th><th></th></tr>';
         PERSONNEL.forEach(function (f) {
           h += '<tr><td>' + echappe(f.nom) + ' ' + echappe(f.prenom) + '</td>' +
