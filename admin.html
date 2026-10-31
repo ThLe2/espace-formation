@@ -147,7 +147,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="ouvertes"></div>
       </div>
 
-      <div class="carte">
+      <div class="carte gestion-seule">
         <h2>Programmer une séance</h2>
         <div class="grille">
           <div><label for="f-da">Module (DA)</label><select id="f-da"></select></div>
@@ -168,7 +168,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="msg-creation"></div>
       </div>
 
-      <div class="carte">
+      <div class="carte gestion-seule">
         <h2>Affecter un formateur</h2>
         <p class="sub">L'affectation porte sur toutes les séances d'un module pour un groupe —
           pas séance par séance. Le formateur affecté pourra annoter les copies.</p>
@@ -424,6 +424,40 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   /* Bornes des couleurs de la matrice, à ajuster si besoin. */
   var SEUIL_BIEN = 15, SEUIL_MOYEN = 12;
   var FORMATEUR_SEANCE = {};
+  /* Espace Formateurs : on ne montre que les séances auxquelles la
+     personne connectée est affectée (et ce qui en découle). */
+  var MES = null;            // { ids:{}, paires:{}, seances:[] }
+  function modeFormateur() { return ESPACE === 'formateurs'; }
+  function calculerMes(toutes, affect) {
+    var moiId = moi && moi.id, ids = {}, paires = {}, seances = [];
+    (affect || []).forEach(function (x) { if (moiId && x.formateur_id === moiId) ids[x.id] = true; });
+    (toutes || []).forEach(function (sx) {
+      if (!ids[sx.id]) return;
+      seances.push(sx);
+      String(sx.groupes || '').split(',').forEach(function (g) {
+        g = g.trim(); if (g) paires[sx.da_code + '|' + g] = true;
+      });
+    });
+    MES = { ids: ids, paires: paires, seances: seances };
+    return MES;
+  }
+  function assurerMes() {
+    if (!modeFormateur()) return Promise.resolve(null);
+    if (MES) return Promise.resolve(MES);
+    return Promise.all([
+      lire('lms', 'v_seances?select=*'),
+      lire('lms', 'sessions?select=id,formateur_id')
+    ]).then(function (r) { return calculerMes(r[0], r[1]); });
+  }
+  /* Une copie appartient à une de mes séances si l'intitulé et la date
+     correspondent. Faute de correspondance, elle n'est pas montrée. */
+  function copieAMoi(r) {
+    return MES.seances.some(function (sx) {
+      var nomOk = r.seance === sx.libelle || r.seance === sx.da_libelle;
+      var d = String(r.date_seance || '').slice(0, 10);
+      return nomOk && d >= sx.date_debut && d <= (sx.date_fin || sx.date_debut);
+    });
+  }
 
   var $ = function (s) { return document.querySelector(s); };
   var echappe = function (t) {
@@ -578,6 +612,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     $('#qui-nom').textContent = moi
       ? (moi.prenom + ' ' + moi.nom + ' · ' + (moi.role || '')) : '';
     document.title = 'Accompagna — ' + (ESPACE === 'formateurs' ? 'Formateurs' : 'Administration');
+    if (modeFormateur()) Array.prototype.forEach.call(document.querySelectorAll('.gestion-seule'),
+      function (c) { c.hidden = true; });
     if (PARTAGE) {
       $('#espaces').hidden = false;
       $('#role-espace').hidden = true;
@@ -732,6 +768,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       lire('lms', 'formateurs?select=id,nom,prenom')
     ]).then(function (r) {
       SEANCES = r[0] || [];
+      if (modeFormateur()) SEANCES = calculerMes(SEANCES, r[1]).seances;
       var noms = {};
       (r[2] || []).forEach(function (f) { noms[f.id] = f.nom + ' ' + f.prenom; });
       FORMATEUR_SEANCE = {};
@@ -814,7 +851,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     });
     if (!vues.length) {
       $('#liste').innerHTML = '<p class="muted">Aucune séance à afficher. ' +
-        'Les séances passées et les séances de test sont masquées par défaut.</p>';
+        (modeFormateur() && MES && !MES.seances.length
+          ? 'Aucune séance ne vous est affectée pour le moment.</p>'
+          : 'Les séances passées et les séances de test sont masquées par défaut.</p>');
       return;
     }
     var h = '<table><tr><th>Date</th><th>Module</th><th>Groupe</th><th>Horaires</th>' +
@@ -835,7 +874,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
            '<td>' + (FORMATEUR_SEANCE[s.id]
                      ? echappe(FORMATEUR_SEANCE[s.id])
                      : '<span class="etat attention">non affecté</span>') + '</td>' +
-           '<td><button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button></td></tr>';
+           '<td>' + (modeFormateur() ? '' :
+             '<button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button>') + '</td></tr>';
     });
     $('#liste').innerHTML = h + '</table>';
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-dupliquer]'), function (b) {
@@ -1047,8 +1087,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
    * Onglet Copies
    * ------------------------------------------------------------------ */
   function chargerCopies() {
-    return lire('eval', 'v_resultats?select=*&order=soumise_le.desc')
+    return assurerMes().then(function () { return lire('eval', 'v_resultats?select=*&order=soumise_le.desc'); })
       .then(function (d) {
+        if (modeFormateur()) d = (d || []).filter(copieAMoi);
         /* Tri sur l'horodatage serveur, le seul qui dise l'ordre réel du
            parcours : la date de la séance peut être modifiée après coup. */
         RESULTATS = (d || []).sort(function (a, b2) {
@@ -1226,8 +1267,11 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   }
 
   function chargerResultats() {
-    return lire('eval', 'v_synthese_groupe_da?select=*')
+    return assurerMes().then(function () { return lire('eval', 'v_synthese_groupe_da?select=*'); })
       .then(function (d) {
+        if (modeFormateur()) d = (d || []).filter(function (x) {
+          return MES.paires[x.da_code + '|' + x.code_analytique];
+        });
         SYNTHESE = (d || []).sort(function (a, b2) {
           return String(a.da_libelle).localeCompare(String(b2.da_libelle)) ||
                  String(a.groupe).localeCompare(String(b2.groupe));
