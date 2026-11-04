@@ -64,6 +64,8 @@ button{font:inherit}
 .btn:disabled{background:var(--trame); border-color:var(--trame); color:var(--gris-moyen); cursor:not-allowed}
 .btn-clair{background:transparent; color:var(--prune)}
 .btn-clair:hover:not(:disabled){background:var(--prune-clair); border-color:var(--prune)}
+video::cue{background:rgba(31,42,55,.85);color:#fff;font-size:1.05em;line-height:1.35}
+#st-bascule[hidden],#st-transcription[hidden]{display:none}
 .btn-lien{background:none;border:none;color:var(--prune);cursor:pointer;padding:0;font-weight:600;text-decoration:underline}
 
 /* ---------- Connexion ---------- */
@@ -870,6 +872,46 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     });
   }
 
+  /* --- Sous-titres : fichier .vtt rangé à côté du .mp4, même nom. Affichés par défaut,
+     désactivables ; le choix du stagiaire est mémorisé sur son poste. Sans fichier .vtt,
+     rien ne s'affiche. La transcription (nom_transcription.html) suit la même règle. --- */
+  function brancherSousTitres(video, url) {
+    if (!/\.mp4(\?.*)?$/i.test(url)) return;
+    var base = url.replace(/\.mp4(\?.*)?$/i, '');
+    var bouton = $('#st-bascule'), lien = $('#st-transcription');
+    var actifs = true;
+    try { actifs = localStorage.getItem('accompagna.sous_titres') !== 'non'; } catch (x) {}
+    function appliquer() {
+      var t = video.textTracks && video.textTracks[0];
+      if (t) t.mode = actifs ? 'showing' : 'hidden';
+      bouton.setAttribute('aria-pressed', actifs ? 'true' : 'false');
+      bouton.textContent = 'Sous-titres : ' + (actifs ? 'activés' : 'désactivés');
+    }
+    fetch(base + '.vtt', { method: 'HEAD' }).then(function (r) {
+      if (!r.ok) return;
+      var tr = document.createElement('track');
+      tr.kind = 'subtitles'; tr.srclang = 'fr'; tr.label = 'Français'; tr.src = base + '.vtt';
+      if (actifs) tr.default = true;
+      video.appendChild(tr);
+      tr.addEventListener('load', appliquer);
+      bouton.hidden = false; appliquer();
+      bouton.addEventListener('click', function () {
+        actifs = !actifs;
+        try { localStorage.setItem('accompagna.sous_titres', actifs ? 'oui' : 'non'); } catch (x) {}
+        appliquer();
+      });
+      /* Le bouton CC du lecteur natif reste utilisable : on suit son état. */
+      video.textTracks.addEventListener && video.textTracks.addEventListener('change', function () {
+        var t = video.textTracks[0]; if (!t) return;
+        var on = t.mode === 'showing';
+        if (on !== actifs) { actifs = on; try { localStorage.setItem('accompagna.sous_titres', on ? 'oui' : 'non'); } catch (x) {} appliquer(); }
+      });
+    }).catch(function () {});
+    fetch(base + '_transcription.html', { method: 'HEAD' }).then(function (r) {
+      if (r.ok) { lien.href = base + '_transcription.html'; lien.hidden = false; }
+    }).catch(function () {});
+  }
+
   /* --- Capsule vidéo : le blocage de l'avance rapide vit ici et au serveur --- */
   function panneauVideo(p, tete, e) {
     var regle = e.regle || {};
@@ -886,10 +928,12 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       '<select id="vitesse" style="margin-left:.4rem">' +
       '<option value="0.75">0,75×</option><option value="0.9" selected>0,9×</option>' +
       '<option value="1">1×</option><option value="1.25">1,25×</option>' +
-      '<option value="1.5">1,5×</option></select></label></div>' +
+      '<option value="1.5">1,5×</option></select></label>' +
+      '<button type="button" class="btn btn-clair" id="st-bascule" hidden aria-pressed="true" style="margin-left:.8rem;padding:.3rem .8rem;font-size:.85rem">Sous-titres : activés</button>' +
+      '<a id="st-transcription" hidden target="_blank" rel="noopener" style="margin-left:.8rem;font-size:.85rem">Lire la transcription</a></div>' +
       '<div class="vu"><div class="vu-piste"><div class="vu-part" id="vu-part"></div>' +
       '<div class="vu-tete" id="vu-tete"></div></div>' +
-      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : 90 %</span></div></div>' +
+      '<div class="vu-txt"><span id="vu-txt">—</span><span>Visionnage requis : ' + Math.round(seuil * 100) + ' %</span></div></div>' +
       '<div class="note" id="note-video" hidden></div>' +
       '<div class="actions" id="actions-video"></div>' +
       /* regle.support : document commenté par la capsule (e-mail, tableau…),
@@ -900,6 +944,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
         : '');
 
     var video = $('#capsule');
+    brancherSousTitres(video, e.media_url || '');
     var selVitesse = $('#vitesse');
     function appliquerVitesse() { video.playbackRate = parseFloat(selVitesse.value); }
     selVitesse.addEventListener('change', appliquerVitesse);
