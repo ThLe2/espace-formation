@@ -288,6 +288,17 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       .dossier { width: 100vw; border-left: 0; }
       body.avec-dossier main { padding-right: 1.5rem; }
     }
+  /* --- Préambule « Notre usage de l'IA » --- */
+    .preambule { max-width: 46rem; margin: 0 auto; }
+    .preambule h1 { font-size: 1.45rem; margin-bottom: 1.5rem; line-height: 1.3; }
+    .preambule .point { border-left: 3px solid var(--prune); background: var(--blanc);
+                        padding: 1rem 1.25rem; margin: 0 0 1rem; }
+    .preambule .point h2 { font-size: 1.02rem; color: var(--prune-fonce); margin-bottom: .35rem; }
+    .preambule .point p { margin: 0 0 .5rem; }
+    .preambule .point p:last-child { margin-bottom: 0; }
+    .preambule .vous { background: var(--prune-clair); padding: 1rem 1.25rem; margin-top: 1.25rem; }
+    .lien-preambule { margin-top: 3rem; font-size: .85rem; text-align: center; }
+    .lien-preambule .btn-lien { font-weight: 500; color: var(--gris-moyen); }
   /* --- Réponses rédigées : compteur et collage désactivé --- */
     .compteur { font-size: .8rem; color: var(--gris-moyen, #8A7A85); margin: .3rem 0 0; text-align: right; }
     .compteur.refus { color: var(--alerte, #B3261E); font-weight: 600; }
@@ -505,8 +516,64 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       .order('date_debut', { ascending: true })
       .then(function (r) {
         etat.seances = r.data || [];
-        afficherSeances();
+        if (preambuleVu()) afficherSeances();
+        else afficherPreambule(true);
       });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Préambule « Notre usage de l'intelligence artificielle »
+   * Affiché en plein écran à la première connexion, avant les séances,
+   * puis accessible par un lien discret en bas de « Mes séances ».
+   * La lecture est mémorisée dans le navigateur, par stagiaire : sur un
+   * autre poste, le préambule s'affiche une nouvelle fois.
+   * ------------------------------------------------------------------ */
+  var CLE_PREAMBULE = 'accompagna.preambule_ia.v1.';
+  function preambuleVu() {
+    try { return localStorage.getItem(CLE_PREAMBULE + etat.stagiaire.id) === 'lu'; }
+    catch (x) { return false; }
+  }
+  function afficherPreambule(premiereFois) {
+    retirerDossier();
+    var h = '<article class="preambule">' +
+      '<p class="eyebrow">Avant de commencer</p>' +
+      '<h1>Comment nous concevons votre formation, et quelle place y tient l\'intelligence artificielle</h1>' +
+      '<section class="point"><h2>1. Une formation conçue par nos experts</h2>' +
+      '<p>Les objectifs, le contenu et les évaluations de votre formation sont définis par l\'équipe pédagogique ' +
+      'de TMK Performances. Elle s\'appuie sur les textes réglementaires, sur nos cours et sur les référentiels ' +
+      'de certification. Ce que vous apprenez n\'est jamais décidé par une IA.</p></section>' +
+      '<section class="point"><h2>2. Des contenus réalisés avec l\'aide de l\'IA</h2>' +
+      '<p>Nous utilisons l\'IA pour mettre en forme nos supports, construire des exercices et réaliser certaines ' +
+      'capsules vidéo. Elle travaille toujours à partir de nos propres cours, jamais à partir d\'une recherche ' +
+      'libre sur Internet.</p></section>' +
+      '<section class="point"><h2>3. Des contenus vérifiés avant d\'arriver jusqu\'à vous</h2>' +
+      '<p>L\'équipe pédagogique relit et valide chaque contenu avant sa mise en ligne : exactitude des règles et ' +
+      'des chiffres, cohérence avec les cours, qualité des questions. Les taux et plafonds réglementaires sont ' +
+      'tenus à jour en un seul endroit, ce qui permet de repérer les exercices à revoir quand la réglementation ' +
+      'change.</p></section>' +
+      '<section class="point"><h2>4. Face à vous, des formateurs et des exercices qui font réfléchir</h2>' +
+      '<p>Dans votre parcours, vous n\'échangez jamais avec une IA. En présentiel et en visio, votre formateur ' +
+      'anime la séance. Dans ce parcours à distance, les exercices et les évaluations sont des activités conçues ' +
+      'par nos soins, avec des corrigés établis par nos experts. Votre formateur intervient au cours de la ' +
+      'journée et suit vos résultats.</p>' +
+      '<p>Le copier-coller est désactivé dans les évaluations et vos réponses sont enregistrées dès que vous les ' +
+      'validez. Ce n\'est pas de la méfiance : on retient ce que l\'on a cherché soi-même.</p></section>' +
+      '<div class="vous"><strong>Et vous ?</strong> Vous pouvez utiliser l\'IA pour réviser, dans le respect de ' +
+      'notre charte d\'utilisation de l\'IA. Pendant les exercices et les évaluations, travaillez seul : c\'est là ' +
+      'que vous progressez.</div>' +
+      '<div class="actions">' + (premiereFois
+        ? '<button class="btn" id="preambule-ok">J\'ai pris connaissance — accéder à mes séances</button>'
+        : '<button class="btn btn-clair" id="preambule-ok">Revenir à mes séances</button>') +
+      '</div></article>';
+    $('#vue-seances').innerHTML = h;
+    $('#vue-seances').hidden = false;
+    $('#vue-seance').hidden = true;
+    window.scrollTo(0, 0);
+    $('#preambule-ok').addEventListener('click', function () {
+      try { localStorage.setItem(CLE_PREAMBULE + etat.stagiaire.id, 'lu'); } catch (x) {}
+      afficherSeances();
+      window.scrollTo(0, 0);
+    });
   }
 
   /* ------------------------------------------------------------------ *
@@ -548,7 +615,11 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       h += '</ul>';
     }
 
+    h += '<p class="lien-preambule"><button type="button" class="btn-lien" id="voir-preambule">' +
+         'Notre usage de l\'intelligence artificielle</button></p>';
+
     $('#vue-seances').innerHTML = h;
+    $('#voir-preambule').addEventListener('click', function () { afficherPreambule(false); });
     $('#vue-seances').hidden = false;
     $('#vue-seance').hidden = true;
     Array.prototype.forEach.call(document.querySelectorAll('[data-ouvrir]'), function (b) {
