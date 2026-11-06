@@ -859,15 +859,31 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   var CLASSE_ETAT = {
     'terminé': 'ok', 'en cours': 'ok', 'réintégré': 'ok',
     'attendu': 'neutre', 'connecté, sans activité': 'attention', 'en retard': 'attention',
-    'bloqué — à appeler': 'alerte', 'exclu': 'alerte'
+    'bloqué — à appeler': 'alerte', 'non connecté — à appeler': 'alerte', 'exclu': 'alerte'
   };
+  function estAAppeler(etat) { return etat === 'bloqué — à appeler' || etat === 'non connecté — à appeler'; }
+
+  /* Retirer l'accès / réintégrer : décision du personnel, jamais de
+     l'application. Motif obligatoire, effet sur la séance du jour seulement. */
+  function deciderAcces(sessionId, stagiaireId, nom, exclure) {
+    var motif = window.prompt((exclure
+      ? 'Retirer l\'accès de ' + nom + ' à cette séance.'
+      : 'Réintégrer ' + nom + ' dans cette séance.') + '\n\nMotif (obligatoire) :', '');
+    if (motif === null) return;
+    if (!motif.trim()) { window.alert('Le motif est obligatoire.'); return; }
+    appeler('lms', exclure ? 'exclure' : 'reintegrer',
+            { p_session_id: sessionId, p_stagiaire: stagiaireId, p_motif: motif.trim() })
+      .then(function () { return chargerOuvertes(); })
+      .catch(function (e) { window.alert('La décision n\'a pas été enregistrée : ' + e.message); });
+  }
 
   function dessinerOuvertes(ouvertes, lignes) {
     var h = '';
     ouvertes.forEach(function (s) {
       var l = lignes.filter(function (x) { return x.session_id === s.id; });
       var connectes = l.filter(function (x) { return x.arrivee; }).length;
-      var aAppeler = l.filter(function (x) { return x.etat === 'bloqué — à appeler'; }).length;
+      var aAppeler = l.filter(function (x) { return estAAppeler(x.etat); }).length;
+      var decider = !modeFormateur() && l.some(function (x) { return x.stagiaire_id; });
       h += '<h3>' + echappe(s.da_libelle || s.libelle) +
            '<span class="etiquette">' + echappe(s.groupes || '—') + '</span></h3>' +
            '<p class="muted"><span class="compteur">' + connectes +
@@ -876,7 +892,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
            ' &nbsp;·&nbsp; ' + hhmm(s.heure_debut) + ' – ' + hhmm(s.heure_cloture) + '</p>';
       if (!l.length) { h += '<p class="muted">Aucun stagiaire inscrit à cette séance.</p>'; return; }
       h += '<table><tr><th>Stagiaire</th><th>Arrivée</th><th>Dernière activité</th>' +
-           '<th>Étapes</th><th>État</th><th>Téléphone</th></tr>';
+           '<th>Étapes</th><th>État</th><th>Téléphone</th>' + (decider ? '<th>Accès</th>' : '') + '</tr>';
       l.sort(function (a, b2) { return String(a.nom || '').localeCompare(String(b2.nom || '')); })
        .forEach(function (x) {
         h += '<tr><td>' + echappe(x.nom) + ' ' + echappe(x.prenom) + '</td>' +
@@ -885,11 +901,23 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
              '<td>' + (x.etapes_faites || 0) + ' / ' + (x.etapes_total || 0) + '</td>' +
              '<td><span class="etat ' + (CLASSE_ETAT[x.etat] || 'neutre') + '">' +
                  echappe(x.etat) + '</span></td>' +
-             '<td>' + echappe(x.telephone || '—') + '</td></tr>';
+             '<td>' + echappe(x.telephone || '—') + '</td>' +
+             (decider ? '<td>' + (x.stagiaire_id
+               ? '<button class="btn-mini" data-acces="' + (x.etat === 'exclu' ? 'reintegrer' : 'exclure') +
+                 '" data-session="' + s.id + '" data-stagiaire="' + echappe(x.stagiaire_id) +
+                 '" data-nom="' + echappe(x.prenom + ' ' + x.nom) + '">' +
+                 (x.etat === 'exclu' ? 'Réintégrer' : 'Retirer l\'accès') + '</button>'
+               : '') + '</td>' : '') + '</tr>';
       });
       h += '</table>';
     });
     $('#ouvertes').innerHTML = h;
+    Array.prototype.forEach.call($('#ouvertes').querySelectorAll('[data-acces]'), function (b) {
+      b.addEventListener('click', function () {
+        deciderAcces(+this.dataset.session, this.dataset.stagiaire, this.dataset.nom,
+                     this.dataset.acces === 'exclure');
+      });
+    });
   }
 
   function dessinerSeances() {
