@@ -212,6 +212,12 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
 .corrige li{padding:.6rem 0 .6rem .9rem; border-left:3px solid var(--trame); margin-bottom:.5rem; font-size:.9rem}
 .corrige li.juste{border-left-color:var(--ok)}
 .corrige li.faux{border-left-color:var(--alerte)}
+.corrige li.partiel{border-left-color:var(--trame)}
+.corrige .elements{list-style:none; padding:0; margin:.4rem 0}
+.corrige .elements li{border:0; padding:.15rem 0; margin:0}
+.corrige .autoeval{margin:.5rem 0 0}
+.corrige .autoeval label{display:block; font-size:.88rem; margin:.25rem 0; cursor:pointer}
+.corrige .autoeval input{margin-right:.45rem}
 
 .chargement{text-align:center; padding:4rem 1rem; color:var(--gris-moyen)}
 @media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
@@ -1476,16 +1482,47 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
           h += (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
           return;
         }
+        /* Rédaction corrigée par éléments attendus : le serveur dit ce qui a
+           été trouvé et ce qui manque ; la réponse modèle suit. */
+        if (d.attendu && d.attendu.correction === 'elements') {
+          var obt = +d.points_obtenus, sur = +d.points;
+          h += '<li class="' + (obt >= sur ? 'juste' : (obt > 0 ? 'partiel' : 'faux')) + '"><strong>' +
+               echappe(enonces[ref] || d.enonce || ref) + '</strong> — ' +
+               String(obt).replace('.', ',') + ' / ' + String(sur).replace('.', ',') + ' point' + (sur > 1 ? 's' : '');
+          if (texte) h += '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>';
+          h += '<ul class="elements">' +
+               (d.trouves || []).map(function (x) { return '<li>✓ ' + echappe(x) + '</li>'; }).join('') +
+               (d.manquants || []).map(function (x) { return '<li>✗ ' + echappe(x) + ' — absent de votre réponse</li>'; }).join('') +
+               '</ul>';
+          h += (d.explication ? '<span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
+          return;
+        }
+        /* Auto-évaluation : en mode autonome, les points de la réponse modèle
+           (attendu.a_cocher) se cochent par le stagiaire. Rien n'est noté. */
+        var aCocher = autonome && d.attendu.a_cocher && d.attendu.a_cocher.length ? d.attendu.a_cocher : null;
         h += '<li class="' + c + '"><strong>' + echappe(enonces[ref] || d.enonce || ref) + '</strong>' +
              (d.juste === true ? ' — réponse correcte' : d.juste === false ? ' — réponse incorrecte'
                : autonome ? ' — comparez votre texte à la réponse modèle' : ' — à corriger par le formateur') +
              (autonome && texte ? '<span class="texte-stagiaire"><em>Votre texte :</em>\n' + echappe(texte) + '</span>' : '') +
-             (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') + '</li>';
+             (d.explication ? '<br><span class="muted">' + echappe(d.explication) + '</span>' : '') +
+             (aCocher ? '<div class="autoeval"><p class="eyebrow">Cochez les points que votre réponse contenait</p>' +
+               aCocher.map(function (x) { return '<label><input type="checkbox" class="autoeval-case"> ' + echappe(x) + '</label>'; }).join('') +
+               '<p class="muted autoeval-bilan" style="font-size:.85rem"></p></div>' : '') + '</li>';
       });
       h += '</ul>';
     }
     h += '</div><div class="actions">' + boutonSuivant() + '</div>';
     p.innerHTML = h;
+    Array.prototype.forEach.call(p.querySelectorAll('.autoeval'), function (bloc) {
+      var cases = bloc.querySelectorAll('.autoeval-case'), bil = bloc.querySelector('.autoeval-bilan');
+      function maj() {
+        var n = Array.prototype.filter.call(cases, function (x) { return x.checked; }).length;
+        bil.textContent = n + ' point' + (n > 1 ? 's' : '') + ' sur ' + cases.length +
+          (n === cases.length ? ' : votre réponse est complète.' : ' : relisez la réponse modèle pour ce qui manque.');
+      }
+      Array.prototype.forEach.call(cases, function (x) { x.addEventListener('change', maj); });
+      maj();
+    });
     brancherSuivant();
   }
 
