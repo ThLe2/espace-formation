@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Accompagna — Espace de formation</title>
+<title>Espace de formation</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%238C1E70'/%3E%3Cpath d='M7 12l3.5 3.5 6.5-7' stroke='%23fff' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -36,8 +36,6 @@ a{color:var(--prune)}
 
 /* ---------- Marque ---------- */
 .marque{font-weight:700; letter-spacing:-.03em; font-size:1.15rem; line-height:1}
-.marque .tmk{color:var(--vert)}
-.marque .perf{color:var(--gris-moyen); font-weight:500}
 .marque .swoosh{
   display:inline-block; width:26px; height:13px; margin-right:.5rem; vertical-align:-2px;
   border:3px solid var(--prune); border-bottom:none; border-radius:26px 26px 0 0;
@@ -45,7 +43,7 @@ a{color:var(--prune)}
 }
 
 
-/* ---------- Logo Accompagna ---------- */
+/* ---------- Nom de l'espace ---------- */
 .logo{display:inline-flex;align-items:center;gap:.55rem}
 .logo .mot{font-weight:700;letter-spacing:-.03em;font-size:1.6rem;color:var(--vert);line-height:1}
 .logo.sombre .mot{color:#fff;font-size:1.2rem}
@@ -94,7 +92,6 @@ video::cue{background:rgba(31,42,55,.85);color:#fff;font-size:1.05em;line-height
   background:var(--prune-fonce); color:#fff; padding:.85rem 1.5rem;
   display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
 }
-.bandeau .marque .tmk,.bandeau .marque .perf{color:#fff}
 .bandeau .marque .swoosh{border-color:var(--rose); border-bottom:none; border-right-color:#fff}
 .bandeau .qui{font-size:.86rem; color:#E9D8E3; display:flex; align-items:center; gap:1rem}
 .bandeau button{color:#fff; text-decoration:underline; background:none; border:none; cursor:pointer; font-size:.86rem}
@@ -315,8 +312,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
 <!-- ============ CONNEXION ============ -->
 <section id="vue-connexion" class="ecran-connexion" hidden>
   <form class="carte-connexion" id="form-connexion" autocomplete="on">
-    <span class="logo"><svg width="46" height="38" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#8C1E70"/><circle cx="42" cy="14" r="10" fill="#8C1E70"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mot">accompagna</span></span>
-    <p class="eyebrow">Espace de formation</p>
+    <span class="logo"><span class="mot">Espace de formation</span></span>
     <h1 style="font-size:1.4rem;margin-bottom:1.75rem">Connexion</h1>
 
     <div class="message" id="msg-connexion" hidden role="alert"></div>
@@ -348,7 +344,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     <a id="retour-personnel" href="index.html" hidden style="color:#fff;margin-left:1rem;font-weight:600">← Retour au choix des espaces</a>
   </div>
   <header class="bandeau">
-    <span class="logo sombre"><svg width="34" height="28" viewBox="0 0 54 44" aria-hidden="true"><path d="M6 36 L22 24 L38 18" stroke="#C77BAA" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="6" cy="36" r="5" fill="#C77BAA"/><circle cx="22" cy="24" r="5" fill="#F4E6EE"/><circle cx="42" cy="14" r="10" fill="#fff"/><path d="M37 14 l3.5 3.5 l6.5 -7" stroke="#5E1349" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="mot">accompagna</span></span>
+    <span class="logo sombre"><span class="mot">Espace de formation</span></span>
     <span class="qui"><span id="qui-nom"></span><button type="button" id="btn-deconnexion">Se déconnecter</button></span>
   </header>
   <main>
@@ -546,7 +542,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       '<h1>Comment nous concevons votre formation, et quelle place y tient l\'intelligence artificielle</h1>' +
       '<section class="point"><h2>1. Une formation conçue par nos experts</h2>' +
       '<p>Les objectifs, le contenu et les évaluations de votre formation sont définis par l\'équipe pédagogique ' +
-      'de TMK Performances. Elle s\'appuie sur les textes réglementaires, sur nos cours et sur les référentiels ' +
+      'de votre organisme de formation. Elle s\'appuie sur les textes réglementaires, sur nos cours et sur les référentiels ' +
       'de certification. Ce que vous apprenez n\'est jamais décidé par une IA.</p></section>' +
       '<section class="point"><h2>2. Des contenus réalisés avec l\'aide de l\'IA</h2>' +
       '<p>Nous utilisons l\'IA pour mettre en forme nos supports, construire des exercices et réaliser certaines ' +
