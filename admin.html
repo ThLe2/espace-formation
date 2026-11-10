@@ -176,7 +176,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
           <button class="btn" id="btn-creer">Créer la séance</button>
           <button class="btn btn-secondaire" id="btn-vider">Réinitialiser</button>
           <span class="muted">Laissez « Fin » vide pour une séance d'une journée.
-            Le formateur est celui de toutes les séances de ce module pour ce groupe.</span>
+            Le formateur est celui de toutes les séances de ce module pour ce groupe.
+            Pour réserver la séance à certains inscrits : bouton « Stagiaires » dans « Séances programmées ».</span>
         </div>
         <div id="msg-creation"></div>
       </div>
@@ -190,6 +191,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
           <button class="btn-mini" id="btn-recharger">Recharger</button>
         </div>
         <div id="liste"></div>
+        <div id="cible-panneau"></div>
       </div>
     </section>
 
@@ -457,6 +459,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   /* Bornes des couleurs de la matrice, à ajuster si besoin. */
   var SEUIL_BIEN = 15, SEUIL_MOYEN = 12;
   var FORMATEUR_SEANCE = {}, FORMATEUR_ID_SEANCE = {};
+  var CIBLES = {};            // { session_id: [stagiaire_id, …] } — vide = tout le groupe
   /* Espace Formateurs : on ne montre que les séances auxquelles la
      personne connectée est affectée (et ce qui en découle). */
   var MES = null;            // { ids:{}, paires:{}, seances:[] }
@@ -838,9 +841,12 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     return Promise.all([
       lire('lms', 'v_seances?select=*&order=date_debut.desc,id.desc'),
       lire('lms', 'sessions?select=id,formateur_id'),
-      lire('lms', 'formateurs?select=id,nom,prenom')
+      lire('lms', 'formateurs?select=id,nom,prenom'),
+      lire('lms', 'sessions_stagiaires?select=session_id,stagiaire_id').catch(function () { return []; })
     ]).then(function (r) {
       SEANCES = r[0] || [];
+      CIBLES = {};
+      (r[3] || []).forEach(function (c) { (CIBLES[c.session_id] = CIBLES[c.session_id] || []).push(c.stagiaire_id); });
       if (modeFormateur()) SEANCES = calculerMes(SEANCES, r[1]).seances;
       var noms = {};
       (r[2] || []).forEach(function (f) { noms[f.id] = f.nom + ' ' + f.prenom; });
@@ -976,14 +982,16 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
            '<td>' + echappe(s.da_libelle || s.da_code) + '</td>' +
            '<td>' + echappe(s.groupes || '—') + '</td>' +
            '<td>' + echappe(hhmm(s.heure_debut)) + ' – ' + echappe(hhmm(s.heure_cloture)) + '</td>' +
-           '<td>' + (s.inscrits == null ? '—' : s.inscrits) + '</td>' +
+           '<td>' + (s.inscrits == null ? '—' : s.inscrits) +
+             (CIBLES[s.id] ? '<span class="etiquette">réservée</span>' : '') + '</td>' +
            '<td data-cellule-formateur="' + s.id + '">' + (FORMATEUR_SEANCE[s.id]
                      ? echappe(FORMATEUR_SEANCE[s.id])
                      : '<span class="etat attention">non affecté</span>') +
              (modeFormateur() ? '' : ' <button class="btn-mini" data-changer="' + s.id + '">Changer</button>') +
              '</td>' +
            '<td>' + (modeFormateur() ? '' :
-             '<button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button>') + '</td></tr>';
+             '<button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button> ' +
+             '<button class="btn-mini" data-cibler="' + s.id + '">Stagiaires</button>') + '</td></tr>';
     });
     $('#liste').innerHTML = h + '</table>';
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-changer]'), function (b) {
@@ -992,6 +1000,74 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-dupliquer]'), function (b) {
       b.addEventListener('click', function () { dupliquer(+this.dataset.dupliquer); });
     });
+    Array.prototype.forEach.call($('#liste').querySelectorAll('[data-cibler]'), function (b) {
+      b.addEventListener('click', function () { ouvrirCible(+this.dataset.cibler); });
+    });
+  }
+
+  /* Réserver une séance à certains inscrits de son groupe. Aucune case
+     cochée = la séance reste ouverte à tout le groupe. La base vérifie
+     elle-même que chaque stagiaire coché est inscrit à la date. */
+  function inscritALaDate(periode, jour) {
+    var m = /^([\[(])([^,]*),([^\])]*)([\])])$/.exec(periode || '');
+    if (!m) return true;
+    var bas = m[2], haut = m[3];
+    if (bas && (m[1] === '[' ? jour < bas : jour <= bas)) return false;
+    if (haut && (m[4] === ']' ? jour > haut : jour >= haut)) return false;
+    return true;
+  }
+
+  function ouvrirCible(id) {
+    var s = SEANCES.filter(function (x) { return x.id === id; })[0];
+    var zone = $('#cible-panneau');
+    if (!s) return;
+    var codes = String(s.groupes || '').split(',').map(function (c) { return c.trim(); });
+    var gids = GROUPES.filter(function (g) { return codes.indexOf(g.code_analytique) >= 0; })
+                      .map(function (g) { return g.id; });
+    var ids = INSCRIPTIONS.filter(function (i) {
+      return gids.indexOf(i.groupe_id) >= 0 && inscritALaDate(i.periode, s.date_debut);
+    }).map(function (i) { return i.stagiaire_id; });
+    if (!ids.length) {
+      zone.innerHTML = '<div class="message err">Aucun inscrit dans le groupe à la date de cette séance.</div>';
+      return;
+    }
+    zone.innerHTML = '<p class="muted">Chargement…</p>';
+    lire('lms', 'stagiaires?select=id,identifiant,nom,prenom&id=in.(' +
+                ids.map(function (x) { return '"' + x + '"'; }).join(',') + ')&order=nom')
+      .then(function (liste) {
+        var choisis = CIBLES[id] || [];
+        var h = '<h3>Stagiaires de la séance — ' + echappe(s.da_libelle || s.libelle) +
+                '<span class="etiquette">' + echappe(s.groupes || '') + '</span></h3>' +
+                '<p class="muted">Cochez les stagiaires qui doivent voir cette séance. ' +
+                'Aucune case cochée : elle est ouverte à tout le groupe.</p><div class="grille">';
+        (liste || []).forEach(function (st) {
+          h += '<label class="bascule"><input type="checkbox" value="' + echappe(st.id) + '"' +
+               (choisis.indexOf(st.id) >= 0 ? ' checked' : '') + '> ' +
+               echappe(st.nom) + ' ' + echappe(st.prenom) +
+               ' <span class="muted">' + echappe(st.identifiant) + '</span></label>';
+        });
+        h += '</div><div class="actions"><button class="btn" id="btn-cible-ok">Enregistrer</button>' +
+             '<button class="btn btn-secondaire" id="btn-cible-non">Fermer</button></div>' +
+             '<div id="msg-cible"></div>';
+        zone.innerHTML = h;
+        zone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        $('#btn-cible-non').onclick = function () { zone.innerHTML = ''; };
+        $('#btn-cible-ok').onclick = function () {
+          var coches = Array.prototype.map.call(
+            zone.querySelectorAll('input[type=checkbox]:checked'), function (c) { return c.value; });
+          var b = this; b.disabled = true;
+          appeler('lms', 'cibler_seance', { p_session_id: id, p_stagiaires: coches })
+            .then(function () {
+              alerte('#msg-cible', coches.length
+                ? 'Séance réservée à ' + coches.length + ' stagiaire(s).'
+                : 'Séance ouverte à tout le groupe.', 'ok');
+              return chargerSeances();
+            })
+            .catch(function (e) { alerte('#msg-cible', e.message); })
+            .then(function () { b.disabled = false; });
+        };
+      })
+      .catch(function (e) { zone.innerHTML = '<div class="message err">' + echappe(e.message) + '</div>'; });
   }
 
   /* Sous-onglets de « Séances » : un seul bloc affiché à la fois. */
