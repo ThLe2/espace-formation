@@ -991,7 +991,8 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
              '</td>' +
            '<td>' + (modeFormateur() ? '' :
              '<button class="btn-mini" data-dupliquer="' + s.id + '">Dupliquer</button> ' +
-             '<button class="btn-mini" data-cibler="' + s.id + '">Stagiaires</button>') + '</td></tr>';
+             '<button class="btn-mini" data-cibler="' + s.id + '">Stagiaires</button> ' +
+             '<button class="btn-mini" data-modifier="' + s.id + '">Modifier</button>') + '</td></tr>';
     });
     $('#liste').innerHTML = h + '</table>';
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-changer]'), function (b) {
@@ -1002,6 +1003,9 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     });
     Array.prototype.forEach.call($('#liste').querySelectorAll('[data-cibler]'), function (b) {
       b.addEventListener('click', function () { ouvrirCible(+this.dataset.cibler); });
+    });
+    Array.prototype.forEach.call($('#liste').querySelectorAll('[data-modifier]'), function (b) {
+      b.addEventListener('click', function () { ouvrirModification(+this.dataset.modifier); });
     });
   }
 
@@ -1068,6 +1072,50 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         };
       })
       .catch(function (e) { zone.innerHTML = '<div class="message err">' + echappe(e.message) + '</div>'; });
+  }
+
+  /* Modifier la date et les horaires d'une séance. La base refuse si un
+     stagiaire l'a déjà commencée, ou si le module est déjà programmé pour
+     ce groupe à la nouvelle date. */
+  function ouvrirModification(id) {
+    var s = SEANCES.filter(function (x) { return x.id === id; })[0];
+    var zone = $('#cible-panneau');
+    if (!s) return;
+    var fenetre = s.date_fin && s.date_fin !== s.date_debut;
+    zone.innerHTML =
+      '<h3>Modifier la séance — ' + echappe(s.da_libelle || s.libelle) +
+      '<span class="etiquette">' + echappe(s.groupes || '') + '</span></h3>' +
+      '<div class="grille">' +
+      '<div><label for="m-date">Date</label><input id="m-date" type="date" value="' + echappe(s.date_debut) + '"></div>' +
+      '<div><label for="m-fin">Fin (si fenêtre)</label><input id="m-fin" type="date" value="' +
+        (fenetre ? echappe(s.date_fin) : '') + '"></div>' +
+      '<div><label for="m-debut">Ouverture</label><input id="m-debut" type="time" value="' + echappe(hhmm(s.heure_debut) || '08:30') + '"></div>' +
+      '<div><label for="m-hfin">Fin</label><input id="m-hfin" type="time" value="' + echappe(hhmm(s.heure_fin) || '16:30') + '"></div>' +
+      '<div><label for="m-cloture">Clôture</label><input id="m-cloture" type="time" value="' + echappe(hhmm(s.heure_cloture) || '18:30') + '"></div>' +
+      '</div><div class="actions"><button class="btn" id="btn-modif-ok">Enregistrer</button>' +
+      '<button class="btn btn-secondaire" id="btn-modif-non">Fermer</button>' +
+      '<span class="muted">Laissez « Fin » vide pour une séance d\'une journée. ' +
+      'Impossible une fois qu\'un stagiaire a commencé la séance.</span></div>' +
+      '<div id="msg-modif"></div>';
+    zone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    $('#btn-modif-non').onclick = function () { zone.innerHTML = ''; };
+    $('#btn-modif-ok').onclick = function () {
+      var date = $('#m-date').value, fin = $('#m-fin').value || null;
+      if (!date) { alerte('#msg-modif', 'La date est attendue.'); return; }
+      if (fin && fin < date) { alerte('#msg-modif', 'La date de fin précède la date de début.'); return; }
+      var b = this; b.disabled = true;
+      appeler('lms', 'modifier_seance', {
+        p_session_id: id, p_date: date, p_date_fin: fin,
+        p_heure_debut: $('#m-debut').value || '08:30',
+        p_heure_fin: $('#m-hfin').value || '16:30',
+        p_heure_cloture: $('#m-cloture').value || '18:30'
+      }).then(function () {
+        alerte('#msg-modif', 'Séance ' + id + ' enregistrée au ' + dateCourte(date) +
+               (fin && fin !== date ? ' → ' + dateCourte(fin) : '') + '.', 'ok');
+        return chargerSeances();
+      }).catch(function (e) { alerte('#msg-modif', e.message); })
+        .then(function () { b.disabled = false; });
+    };
   }
 
   /* Sous-onglets de « Séances » : un seul bloc affiché à la fois. */
