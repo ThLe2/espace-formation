@@ -260,6 +260,32 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       </div>
 
       <div class="carte">
+        <h2>Saisir un stagiaire</h2>
+        <p class="sub">Sans feuille de suivi — par exemple pour une entreprise qui utilise l'outil
+          avec ses propres stagiaires. La référence est proposée au numéro suivant du groupe :
+          elle entre dans le mot de passe, vous pouvez la modifier avant d'ajouter.</p>
+        <div class="grille">
+          <div><label for="sa-id">Référence (id)</label><input id="sa-id"></div>
+          <div><label for="sa-civ">Civilité</label>
+            <select id="sa-civ"><option value="">—</option><option>M</option><option>Mme</option></select></div>
+          <div><label for="sa-nom">Nom</label><input id="sa-nom" autocomplete="off"></div>
+          <div><label for="sa-prenom">Prénom</label><input id="sa-prenom" autocomplete="off"></div>
+          <div><label for="sa-email">Adresse de connexion</label>
+            <input id="sa-email" type="email" autocomplete="off" placeholder="prenom.nom@…"></div>
+          <div><label for="sa-tel">Téléphone</label><input id="sa-tel" autocomplete="off"></div>
+          <div><label for="sa-naiss">Date de naissance</label><input id="sa-naiss" type="date"></div>
+          <div><label for="sa-perso">Adresse personnelle</label>
+            <input id="sa-perso" type="email" autocomplete="off"></div>
+        </div>
+        <div class="actions">
+          <button class="btn" id="btn-saisir">Ajouter au groupe</button>
+          <span class="muted">Le stagiaire est inscrit tout de suite ; son compte se crée ensuite
+            dans la carte « Comptes de connexion ».</span>
+        </div>
+        <div id="msg-saisie"></div>
+      </div>
+
+      <div class="carte">
         <h2>Comptes de connexion</h2>
         <p class="sub">Le compte est l'adresse Teams du stagiaire ; le mot de passe se calcule
           à partir de son nom et de son identifiant de suivi. Regardez d'abord ce qui serait fait.</p>
@@ -675,6 +701,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
     $('#s-groupe').addEventListener('change', chargerStagiaires);
     $('#btn-importer').addEventListener('click', importer);
+    $('#btn-saisir').addEventListener('click', saisir);
     $('#btn-comptes-blanc').addEventListener('click', function () { comptes(false); });
     $('#btn-comptes-vrai').addEventListener('click', function () { comptes(true); });
     $('#btn-inscrire').addEventListener('click', inscrire);
@@ -1094,12 +1121,13 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     var ins = INSCRIPTIONS.filter(function (i) { return i.groupe_id === g.id; });
     if (!ins.length) {
       $('#liste-stagiaires').innerHTML = '<p class="muted">Aucun inscrit dans ce groupe.</p>';
+      STAGIAIRES = []; proposerReference();
       return;
     }
     var ids = ins.map(function (i) { return '"' + i.stagiaire_id + '"'; }).join(',');
     lire('lms', 'stagiaires?select=id,identifiant,nom,prenom,email,telephone,actif,user_id' +
                 '&id=in.(' + ids + ')&order=nom')
-      .then(function (d) { STAGIAIRES = d || []; dessinerStagiaires(ins); })
+      .then(function (d) { STAGIAIRES = d || []; dessinerStagiaires(ins); proposerReference(); })
       .catch(function (e) {
         $('#liste-stagiaires').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
       });
@@ -1152,6 +1180,53 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
       })
       .catch(function (e) { alerte('#msg-import', e.message); })
       .then(function () { b.disabled = false; b.textContent = 'Importer dans le groupe'; });
+  }
+
+  /* Saisie à l'unité : on fabrique une ligne au format de la feuille
+     de suivi et on passe par importer_colle, comme pour un collage.
+     Aucune règle n'est dupliquée ici : la base reste seule juge. */
+  function proposerReference() {
+    var g = groupeChoisi();
+    if (!g) { $('#sa-id').value = ''; return; }
+    var max = 0;
+    (STAGIAIRES || []).forEach(function (s) {
+      var m = /(\d+)\s*$/.exec(s.identifiant || '');
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    var n = max + 1;
+    $('#sa-id').value = g.code_analytique + '_' + (n < 10 ? '0' + n : n);
+  }
+
+  function saisir() {
+    var g = groupeChoisi();
+    if (!g) { alerte('#msg-saisie', 'Choisissez un groupe.'); return; }
+    function v(id) { return ($(id).value || '').replace(/[\t\r\n]+/g, ' ').trim(); }
+    var ref = v('#sa-id'), nom = v('#sa-nom'), prenom = v('#sa-prenom'), email = v('#sa-email');
+    if (!ref || !nom || !prenom || !email) {
+      alerte('#msg-saisie', 'Référence, nom, prénom et adresse de connexion sont indispensables.');
+      return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      alerte('#msg-saisie', 'Adresse de connexion invalide.'); return;
+    }
+    var naiss = v('#sa-naiss');
+    if (naiss) { var p = naiss.split('-'); naiss = p[2] + '/' + p[1] + '/' + p[0]; }
+    var texte =
+      ['id', 'civ', 'nom', 'prenom', 'compte_teams', 'telephone', 'date_naissance', 'email_personnel'].join('\t') + '\n' +
+      [ref, v('#sa-civ'), nom, prenom, email, v('#sa-tel'), naiss, v('#sa-perso')].join('\t');
+    var b = $('#btn-saisir'); b.disabled = true; b.textContent = 'Ajout…';
+    appeler('lms', 'importer_colle', { p_groupe_code: g.code_analytique, p_texte: texte })
+      .then(function (lignes) {
+        var l = (lignes || [])[0];
+        alerte('#msg-saisie', l
+          ? l.identifiant + ' — ' + l.nom + ' ' + l.prenom + ' : ' + l.etat
+          : 'Aucune ligne traitée.', l ? 'ok' : undefined);
+        if (l) ['#sa-civ', '#sa-nom', '#sa-prenom', '#sa-email', '#sa-tel', '#sa-naiss', '#sa-perso']
+                 .forEach(function (id) { $(id).value = ''; });
+        return chargerReferences().then(chargerStagiaires);
+      })
+      .catch(function (e) { alerte('#msg-saisie', e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Ajouter au groupe'; });
   }
 
   /* Deux temps : on regarde d'abord ce qui serait fait, on exécute
