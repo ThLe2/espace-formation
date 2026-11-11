@@ -305,6 +305,29 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   /* --- Réponses rédigées : compteur et collage désactivé --- */
     .compteur { font-size: .8rem; color: var(--gris-moyen, #8A7A85); margin: .3rem 0 0; text-align: right; }
     .compteur.refus { color: var(--alerte, #B3261E); font-weight: 600; }
+
+/* --- Assistant du cours (pilote, 11/11/2026) --- */
+.btn-assistant{position:fixed; right:1.2rem; bottom:1.2rem; z-index:60; background:var(--prune); color:#fff;
+  border:none; border-radius:999px; padding:.75rem 1.2rem; font:inherit; font-weight:600; cursor:pointer;
+  box-shadow:0 4px 14px rgba(94,19,73,.25)}
+.btn-assistant:hover{background:var(--prune-fonce)}
+.assistant{position:fixed; right:1.2rem; bottom:1.2rem; z-index:61; width:min(420px, calc(100vw - 2.4rem));
+  max-height:min(640px, calc(100vh - 2.4rem)); display:flex; flex-direction:column; background:#fff;
+  border:1px solid var(--trame); border-top:3px solid var(--prune); box-shadow:0 8px 28px rgba(0,0,0,.18)}
+.assistant[hidden], .btn-assistant[hidden]{display:none}
+.assistant-tete{display:flex; justify-content:space-between; align-items:center; padding:.7rem 1rem;
+  border-bottom:1px solid var(--trame); color:var(--prune-fonce)}
+.assistant-tete button{background:none; border:none; color:var(--prune); cursor:pointer; font:inherit; text-decoration:underline}
+.assistant-fil{flex:1; overflow:auto; padding:.8rem 1rem; font-size:.93rem}
+.assistant-fil .q{margin:.6rem 0 .3rem; font-weight:600; color:var(--prune-fonce)}
+.assistant-fil .r{white-space:pre-wrap; line-height:1.5}
+.assistant-fil .src{font-size:.82rem; margin:.4rem 0 .9rem; padding-left:1rem}
+.assistant-fil .info{font-size:.85rem; color:#666}
+.assistant-saisie{border-top:1px solid var(--trame); padding:.7rem 1rem}
+.assistant-saisie textarea{width:100%; min-height:4.2rem; box-sizing:border-box; font:inherit; padding:.5rem;
+  border:1px solid var(--trame); resize:vertical}
+.assistant-saisie .ligne{display:flex; justify-content:space-between; align-items:center; margin-top:.5rem; gap:.6rem}
+.assistant-saisie small{color:#666; font-size:.75rem}
 </style>
 </head>
 <body>
@@ -530,7 +553,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
    * La lecture est mémorisée dans le navigateur, par stagiaire : sur un
    * autre poste, le préambule s'affiche une nouvelle fois.
    * ------------------------------------------------------------------ */
-  var CLE_PREAMBULE = 'accompagna.preambule_ia.v1.';
+  var CLE_PREAMBULE = 'accompagna.preambule_ia.v2.'; // v2 (11/11/2026) : assistant du cours — réaffiché une fois à tous
   function preambuleVu() {
     try { return localStorage.getItem(CLE_PREAMBULE + etat.stagiaire.id) === 'lu'; }
     catch (x) { return false; }
@@ -554,10 +577,14 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       'tenus à jour en un seul endroit, ce qui permet de repérer les exercices à revoir quand la réglementation ' +
       'change.</p></section>' +
       '<section class="point"><h2>4. Face à vous, des formateurs et des exercices qui font réfléchir</h2>' +
-      '<p>Dans votre parcours, vous n\'échangez jamais avec une IA. En présentiel et en visio, votre formateur ' +
-      'anime la séance. Dans ce parcours à distance, les exercices et les évaluations sont des activités conçues ' +
-      'par nos soins, avec des corrigés établis par nos experts. Votre formateur intervient au cours de la ' +
-      'journée et suit vos résultats.</p>' +
+      '<p>Vos exercices et vos évaluations ne sont jamais corrigés par une IA : ce sont des activités conçues ' +
+      'par nos soins, avec des corrigés établis par nos experts. En présentiel et en visio, votre formateur anime ' +
+      'la séance. Dans ce parcours à distance, il intervient au cours de la journée et suit vos résultats.</p>' +
+      '<p>Sur certains cours, un assistant vous permet de poser une question pendant les vidéos et les lectures. ' +
+      'Il répond grâce à l\'intelligence artificielle, uniquement à partir des supports du cours, et cite ses ' +
+      'sources. Il est fermé pendant les exercices et les évaluations. Vos questions sont conservées et peuvent ' +
+      'être lues par l\'équipe pédagogique pour améliorer le cours. En cas de doute, c\'est votre formateur qui ' +
+      'fait foi.</p>' +
       '<p>Le copier-coller est désactivé dans les évaluations et vos réponses sont enregistrées dès que vous les ' +
       'validez. Ce n\'est pas de la méfiance : on retient ce que l\'on a cherché soi-même.</p></section>' +
       '<div class="vous"><strong>Et vous ?</strong> Vous pouvez utiliser l\'IA pour réviser, dans le respect de ' +
@@ -804,9 +831,89 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
     basculer(window.innerWidth >= 1100);
   }
 
+  /* --- Assistant du cours (pilote, 11/11/2026) ------------------------ *
+   * Propose sur les videos, memos et exemples des DA listes ci-dessous
+   * (jamais sur les exercices, evaluations et rappels). La base
+   * refait tous les controles (seance ouverte, etape, quota, plafond) :
+   * ce filtre ne sert qu'a ne pas afficher le bouton inutilement.        */
+  var ASSISTANT_DA = ['assurance-emprunteur'];
+  function assistantPermis(e) {
+    if (APERCU || !e || !etat.seance) return false;
+    if (e.evalue || e.type === 'qcm' || e.type === 'cas_pratique' || e.type === 'exercice' || /rappel/.test(e.ref || '')) return false;
+    return ASSISTANT_DA.some(function (c) { return (e.ref || '').indexOf(c + '-') === 0; });
+  }
+  function poserAssistant(e) {
+    var bouton = $('#btn-assistant'), panneau = $('#assistant');
+    if (!bouton) {
+      bouton = document.createElement('button');
+      bouton.type = 'button'; bouton.id = 'btn-assistant'; bouton.className = 'btn-assistant';
+      bouton.textContent = 'Une question sur le cours ?';
+      panneau = document.createElement('aside');
+      panneau.id = 'assistant'; panneau.className = 'assistant'; panneau.hidden = true;
+      panneau.setAttribute('aria-label', 'Assistant du cours');
+      panneau.innerHTML =
+        '<div class="assistant-tete"><strong>Assistant du cours</strong>' +
+        '<button type="button" id="assistant-fermer">Fermer</button></div>' +
+        '<div class="assistant-fil" id="assistant-fil" aria-live="polite">' +
+        '<p class="info">Posez une question sur ce cours. Les réponses sont produites par une ' +
+        'intelligence artificielle, uniquement à partir des supports du cours, et indiquent leurs sources. ' +
+        'En cas de doute, adressez-vous à votre formateur.</p></div>' +
+        '<form class="assistant-saisie" id="assistant-form">' +
+        '<label for="assistant-q" class="info">Votre question</label>' +
+        '<textarea id="assistant-q" maxlength="500" required></textarea>' +
+        '<div class="ligne"><small id="assistant-reste"></small>' +
+        '<button class="btn" type="submit" id="assistant-envoyer">Envoyer</button></div></form>';
+      document.body.appendChild(bouton); document.body.appendChild(panneau);
+      bouton.addEventListener('click', function () { panneau.hidden = false; bouton.hidden = true; $('#assistant-q').focus(); });
+      $('#assistant-fermer').addEventListener('click', function () { panneau.hidden = true; bouton.hidden = false; bouton.focus(); });
+      $('#assistant-form').addEventListener('submit', function (ev) { ev.preventDefault(); envoyerQuestion(); });
+    }
+    var permis = assistantPermis(e);
+    if (!permis) { panneau.hidden = true; bouton.hidden = true; return; }
+    if (panneau.hidden) bouton.hidden = false;
+  }
+  function envoyerQuestion() {
+    var zone = $('#assistant-q'), fil = $('#assistant-fil'), btn = $('#assistant-envoyer');
+    var q = (zone.value || '').trim(), e = etat.courante;
+    if (q.length < 3 || !assistantPermis(e)) return;
+    btn.disabled = true; zone.disabled = true;
+    var bloc = document.createElement('div');
+    bloc.innerHTML = '<p class="q">' + echappe(q) + '</p><p class="r info">Recherche dans les supports du cours…</p>';
+    fil.appendChild(bloc); fil.scrollTop = fil.scrollHeight;
+    db.auth.getSession().then(function (s) {
+      var jeton = s && s.data && s.data.session && s.data.session.access_token;
+      return fetch(CFG.SUPABASE_URL + '/functions/v1/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY,
+                   'Authorization': 'Bearer ' + jeton },
+        body: JSON.stringify({ session_id: etat.seance.id, etape_ref: e.ref, question: q })
+      }).then(function (r) { return r.json(); });
+    }).then(function (j) {
+      var r = bloc.querySelector('.r');
+      if (!j || !j.ok) { r.className = 'r info'; r.textContent = (j && j.message) || 'L\'assistant est momentanément indisponible.'; return; }
+      r.className = 'r'; r.textContent = j.reponse;
+      if (j.sources && j.sources.length) {
+        var ul = document.createElement('ol'); ul.className = 'src';
+        j.sources.forEach(function (x) {
+          var li = document.createElement('li');
+          li.innerHTML = (x.url ? '<a href="' + echappe(x.url) + '" target="_blank" rel="noopener">' : '') +
+            echappe(x.document) + (x.url ? '</a>' : '') + (x.section ? ' — ' + echappe(x.section) : '');
+          ul.appendChild(li);
+        });
+        bloc.appendChild(ul);
+      }
+      if (typeof j.restantes === 'number') $('#assistant-reste').textContent =
+        j.restantes > 1 ? j.restantes + ' questions restantes aujourd\'hui' : (j.restantes === 1 ? '1 question restante aujourd\'hui' : 'Plus de question possible aujourd\'hui');
+      zone.value = '';
+    }).catch(function () {
+      var r = bloc.querySelector('.r'); r.className = 'r info'; r.textContent = 'L\'assistant est momentanément indisponible.';
+    }).then(function () { btn.disabled = false; zone.disabled = false; fil.scrollTop = fil.scrollHeight; });
+  }
+
   function dessinerPanneau() {
     var p = $('#panneau'), e = etat.courante;
     poserDossier(e);
+    poserAssistant(e);
     if (!e) { p.innerHTML = '<p class="muted">Cette séance ne contient aucune étape.</p>'; return; }
 
     var tete = '<div class="panneau-tete"><p class="eyebrow">' + libelleType(e.type) + '</p>' +
