@@ -62,6 +62,27 @@ td.secret{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.84rem;
 .btn-mini{padding:.25rem .6rem;font-size:.8rem;background:#fff;color:var(--prune);
   border:1px solid var(--trame);border-radius:6px;cursor:pointer;font-family:inherit}
 .btn-mini:hover{border-color:var(--prune)}
+.pastille{display:inline-block;min-width:1.2rem;padding:0 .35rem;margin-left:.3rem;border-radius:999px;background:#B23A48;
+  color:#fff;font-size:.72rem;font-weight:700;line-height:1.2rem;text-align:center}
+.pastille[hidden]{display:none}
+.sous-onglets-q{display:flex;gap:.4rem;flex-wrap:wrap;margin:0 0 1rem}
+.sous-onglets-q button{background:#fff;border:1px solid var(--trame);border-radius:999px;padding:.4rem 1rem;font-family:inherit;font-size:.85rem;cursor:pointer;color:var(--gris)}
+.sous-onglets-q button:hover{border-color:var(--prune);color:var(--prune-fonce)}
+.sous-onglets-q button.actif{background:var(--prune);border-color:var(--prune);color:#fff}
+.q-carte{border:1px solid var(--trame);border-left:4px solid var(--trame);border-radius:8px;padding:.8rem 1rem;margin:.7rem 0;background:#fff}
+.q-carte.a-traiter{border-left-color:#B23A48}
+.q-carte.repondue{border-left-color:#2F7A4F}
+.q-carte .meta{font-size:.78rem;color:var(--gris-moyen)}
+.q-carte .question{font-weight:600;color:var(--prune-fonce);margin:.35rem 0}
+.q-carte .ia{font-size:.85rem;white-space:pre-wrap;background:#FAF6F8;border-radius:6px;padding:.5rem .7rem;margin:.3rem 0}
+.q-carte .rf{font-size:.88rem;white-space:pre-wrap;background:#E9F5EE;border-left:3px solid #2F7A4F;padding:.5rem .7rem;margin:.4rem 0}
+.q-carte textarea{min-height:5rem;font-family:inherit;font-size:.9rem}
+.q-carte .actions{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin-top:.5rem}
+.q-carte .actions label{display:flex;gap:.4rem;align-items:center;font-size:.85rem;cursor:pointer;width:auto;text-transform:none;letter-spacing:0;color:var(--gris);font-weight:400;margin:0}
+.q-carte .actions input[type=checkbox]{width:auto}
+.tag{display:inline-block;font-size:.72rem;padding:.05rem .5rem;border-radius:999px;margin-left:.3rem;background:#F4E6EE;color:var(--prune-fonce)}
+.tag.rouge{background:#FBE9EB;color:#B23A48}
+.tag.vert{background:#E9F5EE;color:#2F7A4F}
 .actions{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:.9rem}
 table{width:100%;border-collapse:collapse;font-size:.87rem}
 th{background:var(--prune-fonce);color:#fff;text-align:left;padding:.45rem .6rem;font-weight:600;
@@ -143,6 +164,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     <button data-onglet="copies">Copies</button>
     <button data-onglet="personnel">Personnel</button>
     <button data-onglet="modules">Modules</button>
+    <button data-onglet="questions">Questions <span class="pastille" id="pastille-questions" hidden></span></button>
   </nav>
 
   <main>
@@ -426,6 +448,28 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="resume-modules"></div>
         <div id="msg-modules"></div>
         <div id="liste-modules"></div>
+      </div>
+    </section>
+
+    <section id="vue-questions" hidden>
+      <div class="carte">
+        <h2>Questions des stagiaires à l'assistant</h2>
+        <p class="sub">Les questions posées à l'assistant du cours sur vos séances. Répondez à celles que les
+          stagiaires vous ont transmises : votre réponse apparaît dans « Mes questions » sur leur portail.
+          En cochant « Ajouter à l'assistant », elle devient aussi un support du module, que l'assistant
+          pourra citer aux groupes suivants. Repérez enfin les questions restées sans réponse : elles
+          signalent souvent un point qui manque dans le cours.</p>
+        <div class="sous-onglets-q" id="filtres-questions" role="group" aria-label="Filtrer les questions">
+          <button type="button" data-filtre="a_traiter" class="actif">À traiter</button>
+          <button type="button" data-filtre="sans_reponse">Restées sans réponse</button>
+          <button type="button" data-filtre="avis_negatif">Avis négatifs</button>
+          <button type="button" data-filtre="transmises">Toutes les transmises</button>
+          <button type="button" data-filtre="toutes">Toutes les questions</button>
+        </div>
+        <div style="max-width:420px;margin-bottom:.6rem"><label for="q-da">Module</label>
+          <select id="q-da"><option value="">Tous les modules</option></select></div>
+        <div id="msg-questions"></div>
+        <div id="liste-questions"></div>
       </div>
     </section>
   </main>
@@ -744,7 +788,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
 
     $('#btn-enroler').addEventListener('click', enroler);
 
-    chargerReferences().then(function () { chargerSeances(); dessinerGroupes(); });
+    chargerReferences().then(function () { chargerSeances(); dessinerGroupes(); compterQuestions(); });
   }
 
   function ouvrirOnglet(nom) {
@@ -758,6 +802,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     $('#vue-copies').hidden = nom !== 'copies';
     $('#vue-personnel').hidden = nom !== 'personnel';
     $('#vue-modules').hidden = nom !== 'modules';
+    $('#vue-questions').hidden = nom !== 'questions';
     if (nom === 'seances') chargerSeances();
     if (nom === 'groupes') dessinerGroupes();
     if (nom === 'stagiaires') chargerStagiaires();
@@ -765,6 +810,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     if (nom === 'copies') chargerCopies();
     if (nom === 'personnel') chargerPersonnel();
     if (nom === 'modules') chargerModules();
+    if (nom === 'questions') chargerQuestions();
   }
 
   /* ------------------------------------------------------------------ *
@@ -1848,6 +1894,105 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     }).catch(function (e) {
       $('#liste-modules').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
     });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Questions des stagiaires à l'assistant (11/11/2026)
+   * Formateur : ses séances (lms.formateur_voit_session) ; gestionnaire : tout.
+   * ------------------------------------------------------------------ */
+  var FILTRE_Q = 'a_traiter';
+  function compterQuestions() {
+    return appeler('lms', 'assistant_compteur', {}).then(function (n) {
+      var p = $('#pastille-questions'); if (!p) return;
+      n = Number(n || 0); p.textContent = n; p.hidden = !n;
+    }).catch(function () {});
+  }
+  var QUESTIONS_BRANCHEES = false;
+  function chargerQuestions() {
+    if (!QUESTIONS_BRANCHEES) {
+      QUESTIONS_BRANCHEES = true;
+      Array.prototype.forEach.call(document.querySelectorAll('#filtres-questions button'), function (b) {
+        b.addEventListener('click', function () {
+          FILTRE_Q = b.getAttribute('data-filtre');
+          Array.prototype.forEach.call(document.querySelectorAll('#filtres-questions button'), function (x) {
+            x.classList.toggle('actif', x === b);
+          });
+          chargerQuestions();
+        });
+      });
+      $('#q-da').addEventListener('change', chargerQuestions);
+    }
+    $('#msg-questions').innerHTML = '';
+    var sel = $('#q-da');
+    if (sel.options.length === 1 && typeof DAS !== 'undefined' && DAS && DAS.length) {
+      DAS.forEach(function (d) { var o = document.createElement('option'); o.value = d.code; o.textContent = d.libelle; sel.appendChild(o); });
+    }
+    $('#liste-questions').innerHTML = '<p class="muted">Chargement…</p>';
+    compterQuestions();
+    return appeler('lms', 'assistant_questions', { p_filtre: FILTRE_Q, p_da_code: sel.value || null, p_limite: 200 })
+      .then(function (d) {
+        var l = d || [];
+        if (!l.length) {
+          var vide = { a_traiter: 'Aucune question en attente de réponse.', sans_reponse: 'Aucune question restée sans réponse.',
+                       avis_negatif: 'Aucun avis négatif.', transmises: 'Aucune question transmise.', toutes: 'Aucune question posée.' };
+          $('#liste-questions').innerHTML = '<p class="muted">' + (vide[FILTRE_Q] || '') + '</p>'; return;
+        }
+        $('#liste-questions').innerHTML = l.map(carteQuestion).join('');
+        Array.prototype.forEach.call(document.querySelectorAll('#liste-questions [data-repondre]'), function (b) {
+          b.addEventListener('click', function () { repondreQuestion(b.getAttribute('data-repondre')); });
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('#liste-questions [data-retirer]'), function (b) {
+          b.addEventListener('click', function () {
+            b.disabled = true;
+            appeler('lms', 'assistant_retirer_faq', { p_echange_id: Number(b.getAttribute('data-retirer')) })
+              .then(function () { return chargerQuestions(); })
+              .then(function () { alerte('#msg-questions', 'Réponse retirée de l\'assistant du cours.', 'ok'); })
+              .catch(function (e) { b.disabled = false; alerte('#msg-questions', e.message); });
+          });
+        });
+      }).catch(function (e) {
+        $('#liste-questions').innerHTML = '<div class="message err">' + echappe(e.message) + '</div>';
+      });
+  }
+  function carteQuestion(x) {
+    var d = new Date(x.cree_le), etat = x.statut === 'a_traiter' ? 'a-traiter' : (x.statut === 'repondu' ? 'repondue' : '');
+    var tags = (x.statut === 'a_traiter' ? '<span class="tag rouge">transmise · à traiter</span>' : '') +
+               (x.statut === 'repondu' ? '<span class="tag vert">répondue' + (x.lue ? ' · lue' : '') + '</span>' : '') +
+               (x.sans_reponse ? '<span class="tag">restée sans réponse</span>' : '') +
+               (x.avis === -1 ? '<span class="tag rouge">👎 pas utile</span>' : '') +
+               (x.avis === 1 ? '<span class="tag vert">👍 utile</span>' : '') +
+               (x.faq ? '<span class="tag vert">dans l\'assistant</span>' : '');
+    var h = '<div class="q-carte ' + etat + '">' +
+      '<div class="meta">' + echappe(x.stagiaire) + ' · ' + echappe(x.groupes || '') + ' · ' + echappe(x.seance) +
+      ' · ' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) +
+      (x.etape_titre ? ' · ' + echappe(x.etape_titre) : '') + tags + '</div>' +
+      '<div class="question">' + echappe(x.question) + '</div>' +
+      '<details><summary class="muted" style="cursor:pointer;font-size:.82rem">Réponse de l\'assistant (' + x.nb_extraits + ' passage(s) trouvé(s))</summary>' +
+      '<div class="ia">' + echappe(x.reponse || '—') + '</div></details>';
+    if (x.statut === 'repondu') {
+      h += '<div class="rf"><strong>' + echappe(x.repondu_par || 'Formateur') + ' :</strong> ' + echappe(x.reponse_formateur) + '</div>';
+    }
+    h += '<textarea id="rep-' + x.echange_id + '" placeholder="' + (x.statut === 'repondu' ? 'Modifier votre réponse…' : 'Votre réponse au stagiaire…') + '">' +
+         (x.statut === 'repondu' ? echappe(x.reponse_formateur) : '') + '</textarea>' +
+         '<div class="actions"><label><input type="checkbox" id="faq-' + x.echange_id + '"' + (x.faq ? ' checked' : '') + '>' +
+         'Ajouter cette réponse à l\'assistant du cours</label>' +
+         '<button class="btn btn-mini" type="button" data-repondre="' + x.echange_id + '">' +
+         (x.statut === 'repondu' ? 'Mettre à jour la réponse' : 'Envoyer la réponse') + '</button>' +
+         (x.faq ? '<button class="btn btn-mini" type="button" data-retirer="' + x.echange_id + '">Retirer de l\'assistant</button>' : '') +
+         '</div></div>';
+    return h;
+  }
+  function repondreQuestion(id) {
+    var t = $('#rep-' + id), c = $('#faq-' + id), texte = (t.value || '').trim();
+    if (texte.length < 5) { alerte('#msg-questions', 'Rédigez une réponse avant de l\'envoyer.'); t.focus(); return; }
+    appeler('lms', 'assistant_repondre', { p_echange_id: Number(id), p_reponse: texte, p_faq: c.checked })
+      .then(function (r) {
+        if (r && r.ok === false) { alerte('#msg-questions', r.message || 'Réponse non enregistrée.'); return; }
+        var faq = c.checked;
+        return chargerQuestions().then(function () {
+          alerte('#msg-questions', 'Réponse envoyée au stagiaire' + (faq ? ' et ajoutée à l\'assistant du cours.' : '.'), 'ok');
+        });
+      }).catch(function (e) { alerte('#msg-questions', e.message); });
   }
 
   function chargerPersonnel() {

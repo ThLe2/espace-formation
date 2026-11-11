@@ -314,7 +314,7 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
 .assistant{position:fixed; right:1.2rem; bottom:1.2rem; z-index:61; width:min(420px, calc(100vw - 2.4rem));
   max-height:min(640px, calc(100vh - 2.4rem)); display:flex; flex-direction:column; background:#fff;
   border:1px solid var(--trame); border-top:3px solid var(--prune); box-shadow:0 8px 28px rgba(0,0,0,.18)}
-.assistant[hidden], .btn-assistant[hidden]{display:none}
+.assistant[hidden], .btn-assistant[hidden], .assistant-fil[hidden], .assistant-saisie[hidden]{display:none}
 .assistant-tete{display:flex; justify-content:space-between; align-items:center; padding:.7rem 1rem;
   border-bottom:1px solid var(--trame); color:var(--prune-fonce)}
 .assistant-tete button{background:none; border:none; color:var(--prune); cursor:pointer; font:inherit; text-decoration:underline}
@@ -328,6 +328,23 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   border:1px solid var(--trame); resize:vertical}
 .assistant-saisie .ligne{display:flex; justify-content:space-between; align-items:center; margin-top:.5rem; gap:.6rem}
 .assistant-saisie small{color:#666; font-size:.75rem}
+/* Avis, transmission au formateur, « Mes questions » (11/11/2026) */
+.assistant-actions{display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin:.2rem 0 1rem}
+.assistant-actions button{background:#fff; border:1px solid var(--trame); border-radius:999px; padding:.25rem .7rem;
+  font:inherit; font-size:.8rem; cursor:pointer; color:var(--prune-fonce)}
+.assistant-actions button:hover{border-color:var(--prune)}
+.assistant-actions button.choisi{background:var(--prune-clair); border-color:var(--prune)}
+.assistant-actions button.fort{background:var(--prune); border-color:var(--prune); color:#fff}
+.assistant-actions button:disabled{cursor:default; opacity:.75}
+.assistant-actions .fait{font-size:.8rem; color:#2F7A4F}
+.assistant-tete .liens{display:flex; gap:.9rem; align-items:center}
+.pastille{display:inline-block; min-width:1.2rem; padding:0 .35rem; margin-left:.35rem; border-radius:999px;
+  background:#B23A48; color:#fff; font-size:.72rem; font-weight:700; line-height:1.2rem; text-align:center; text-decoration:none}
+.mes-q{border:1px solid var(--trame); border-left:3px solid var(--prune); padding:.6rem .8rem; margin:.6rem 0}
+.mes-q .meta{font-size:.75rem; color:#666}
+.mes-q .rf{margin-top:.4rem; padding:.5rem .7rem; background:#E9F5EE; border-left:3px solid #2F7A4F; white-space:pre-wrap}
+.mes-q .attente{margin-top:.4rem; font-size:.85rem; color:#666; font-style:italic}
+.mes-q.nouvelle{border-left-color:#B23A48}
 </style>
 </head>
 <body>
@@ -860,12 +877,14 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       panneau.id = 'assistant'; panneau.className = 'assistant'; panneau.hidden = true;
       panneau.setAttribute('aria-label', 'Assistant du cours');
       panneau.innerHTML =
-        '<div class="assistant-tete"><strong>Assistant du cours</strong>' +
-        '<button type="button" id="assistant-fermer">Fermer</button></div>' +
+        '<div class="assistant-tete"><strong>Assistant du cours</strong><span class="liens">' +
+        '<button type="button" id="assistant-mesq">Mes questions</button>' +
+        '<button type="button" id="assistant-fermer">Fermer</button></span></div>' +
         '<div class="assistant-fil" id="assistant-fil" aria-live="polite">' +
         '<p class="info">Posez une question sur ce cours. Les réponses sont produites par une ' +
         'intelligence artificielle, uniquement à partir des supports du cours, et indiquent leurs sources. ' +
         'En cas de doute, adressez-vous à votre formateur.</p></div>' +
+        '<div class="assistant-fil" id="assistant-mesq-vue" aria-live="polite" hidden></div>' +
         '<form class="assistant-saisie" id="assistant-form">' +
         '<label for="assistant-q" class="info">Votre question</label>' +
         '<textarea id="assistant-q" maxlength="500" required></textarea>' +
@@ -874,11 +893,87 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       document.body.appendChild(bouton); document.body.appendChild(panneau);
       bouton.addEventListener('click', function () { panneau.hidden = false; bouton.hidden = true; $('#assistant-q').focus(); });
       $('#assistant-fermer').addEventListener('click', function () { panneau.hidden = true; bouton.hidden = false; bouton.focus(); });
+      $('#assistant-mesq').addEventListener('click', function () { basculerMesQuestions(); });
       $('#assistant-form').addEventListener('submit', function (ev) { ev.preventDefault(); envoyerQuestion(); });
     }
     var permis = assistantPermis(e);
     if (!permis) { panneau.hidden = true; bouton.hidden = true; return; }
     if (panneau.hidden) bouton.hidden = false;
+    compterReponses();
+  }
+
+  /* Réponses du formateur non lues : pastille sur le bouton et sur « Mes questions » */
+  function compterReponses() {
+    if (APERCU) return;
+    lms().rpc('assistant_nouvelles_reponses').then(function (r) {
+      var n = (!r.error && typeof r.data === 'number') ? r.data : 0;
+      var b = $('#btn-assistant'), m = $('#assistant-mesq');
+      if (b) b.innerHTML = 'Une question sur le cours ?' + (n ? '<span class="pastille" aria-label="' + n + ' réponse(s) de votre formateur">' + n + '</span>' : '');
+      if (m) m.innerHTML = 'Mes questions' + (n ? '<span class="pastille">' + n + '</span>' : '');
+    });
+  }
+
+  /* « Mes questions » : questions transmises et réponses du formateur */
+  function basculerMesQuestions() {
+    var fil = $('#assistant-fil'), vue = $('#assistant-mesq-vue'), form = $('#assistant-form'), lien = $('#assistant-mesq');
+    if (!vue.hidden) {
+      vue.hidden = true; fil.hidden = false; form.hidden = false;
+      compterReponses(); fil.scrollTop = fil.scrollHeight; return;
+    }
+    fil.hidden = true; form.hidden = true; vue.hidden = false;
+    lien.textContent = 'Retour aux questions';
+    vue.innerHTML = '<p class="info">Chargement…</p>';
+    lms().rpc('assistant_mes_questions').then(function (r) {
+      if (r.error) { vue.innerHTML = '<p class="info">Vos questions ne peuvent pas être affichées pour le moment.</p>'; return; }
+      var l = r.data || [];
+      if (!l.length) { vue.innerHTML = '<p class="info">Vous n\'avez transmis aucune question à votre formateur. ' +
+        'Sous chaque réponse de l\'assistant, le bouton « Transmettre à mon formateur » lui envoie votre question.</p>'; return; }
+      vue.innerHTML = '<p class="info">Les questions transmises à votre formateur, et ses réponses.</p>' + l.map(function (x) {
+        var d = new Date(x.repondu_le || x.cree_le);
+        return '<div class="mes-q' + (x.nouvelle ? ' nouvelle' : '') + '">' +
+          '<div class="meta">' + echappe(x.seance || '') + (x.etape_titre ? ' · ' + echappe(x.etape_titre) : '') +
+          ' · ' + d.toLocaleDateString('fr-FR') + (x.nouvelle ? ' · <strong>nouvelle réponse</strong>' : '') + '</div>' +
+          '<p class="q">' + echappe(x.question) + '</p>' +
+          (x.statut === 'repondu' ? '<div class="rf"><strong>Votre formateur :</strong> ' + echappe(x.reponse_formateur) + '</div>'
+                                  : '<p class="attente">En attente de la réponse de votre formateur.</p>') + '</div>';
+      }).join('');
+      lms().rpc('assistant_marquer_lues');
+    });
+  }
+
+  /* Sous chaque réponse : avis, et transmission au formateur */
+  function poserActions(bloc, sansReponse) {
+    var zone = document.createElement('div'); zone.className = 'assistant-actions';
+    zone.innerHTML =
+      '<button type="button" data-avis="1" aria-label="Réponse utile">👍 Utile</button>' +
+      '<button type="button" data-avis="-1" aria-label="Réponse pas utile">👎 Pas utile</button>' +
+      '<button type="button" data-transmettre class="' + (sansReponse ? 'fort' : '') + '">' +
+      (sansReponse ? 'Transmettre la question à mon formateur' : 'Transmettre à mon formateur') + '</button>';
+    bloc.appendChild(zone);
+    var idEchange = lms().rpc('assistant_dernier_echange', { p_session_id: etat.seance.id })
+      .then(function (r) { return r.error ? null : r.data; });
+    zone.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b || b.disabled) return;
+      idEchange.then(function (id) {
+        if (!id) return;
+        if (b.dataset.avis) {
+          var v = +b.dataset.avis, deja = b.classList.contains('choisi');
+          lms().rpc('assistant_avis', { p_echange_id: id, p_avis: deja ? null : v }).then(function (r) {
+            if (r.error || !r.data || !r.data.ok) return;
+            Array.prototype.forEach.call(zone.querySelectorAll('[data-avis]'), function (x) { x.classList.remove('choisi'); });
+            if (!deja) b.classList.add('choisi');
+          });
+        } else {
+          b.disabled = true;
+          lms().rpc('assistant_transmettre', { p_echange_id: id }).then(function (r) {
+            if (r.error || !r.data || !r.data.ok) { b.disabled = false; return; }
+            var ok = document.createElement('span'); ok.className = 'fait';
+            ok.textContent = '✓ Transmise — la réponse arrivera dans « Mes questions ».';
+            b.replaceWith(ok);
+          });
+        }
+      });
+    });
   }
   function envoyerQuestion() {
     var zone = $('#assistant-q'), fil = $('#assistant-fil'), btn = $('#assistant-envoyer');
@@ -910,6 +1005,8 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
         });
         bloc.appendChild(ul);
       }
+      poserActions(bloc, !(j.sources && j.sources.length) ||
+        /ne permettent pas|ne trouve pas|ne contiennent pas|ne mentionnent pas|ne précisent pas|ne donnent pas|n'indiquent pas|à votre formateur/i.test(j.reponse || ''));
       if (typeof j.restantes === 'number') $('#assistant-reste').textContent =
         j.restantes > 1 ? j.restantes + ' questions restantes aujourd\'hui' : (j.restantes === 1 ? '1 question restante aujourd\'hui' : 'Plus de question possible aujourd\'hui');
       zone.value = '';
