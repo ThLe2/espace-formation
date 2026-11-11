@@ -696,6 +696,15 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
       }
       rafraichirSeance(true);
     });
+
+    // Assistant du cours : activé ou non DA par DA (contenu.das.assistant)
+    etat.assistantDispo = false;
+    if (!APERCU) {
+      lms().rpc('assistant_disponible', { p_session_id: id }).then(function (r) {
+        etat.assistantDispo = !r.error && r.data === true;
+        if (etat.seance && etat.seance.id === id) poserAssistant(etat.courante);
+      });
+    }
   }
 
   function rafraichirSeance(premier) {
@@ -832,15 +841,14 @@ textarea:focus{border-color:var(--prune); outline:none; box-shadow:0 0 0 3px var
   }
 
   /* --- Assistant du cours (pilote, 11/11/2026) ------------------------ *
-   * Propose sur les videos, memos et exemples des DA listes ci-dessous
-   * (jamais sur les exercices, evaluations et rappels). La base
+   * Propose sur les videos, memos et exemples des DA dont l'assistant est
+   * active en base (contenu.das.assistant) ; jamais sur les exercices,
+   * evaluations et rappels. La base
    * refait tous les controles (seance ouverte, etape, quota, plafond) :
    * ce filtre ne sert qu'a ne pas afficher le bouton inutilement.        */
-  var ASSISTANT_DA = ['assurance-emprunteur'];
   function assistantPermis(e) {
-    if (APERCU || !e || !etat.seance) return false;
-    if (e.evalue || e.type === 'qcm' || e.type === 'cas_pratique' || e.type === 'exercice' || /rappel/.test(e.ref || '')) return false;
-    return ASSISTANT_DA.some(function (c) { return (e.ref || '').indexOf(c + '-') === 0; });
+    if (APERCU || !e || !etat.seance || !etat.assistantDispo) return false;
+    return !(e.evalue || e.type === 'qcm' || e.type === 'cas_pratique' || e.type === 'exercice' || /rappel/.test(e.ref || ''));
   }
   function poserAssistant(e) {
     var bouton = $('#btn-assistant'), panneau = $('#assistant');
