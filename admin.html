@@ -1810,20 +1810,27 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   function chargerModules() {
     $('#msg-modules').innerHTML = '';
     return appeler('lms', 'assistant_modules', {}).then(function (d) {
-      var m = d || [], n = 0, cout = 0, ouverts = 0;
+      var m = d || [], n = 0, cout = 0, ouverts = 0, plafond = m.length ? Number(m[0].plafond_mois_eur || 0) : 0;
+      /* Montants en euros ; sous 1 €, affichés en centimes pour rester lisibles */
+      function euros(v) {
+        v = Number(v || 0);
+        if (v === 0) return '0 €';
+        if (v < 1) return (v * 100).toFixed(2).replace('.', ',') + ' centime' + (v * 100 >= 2 ? 's' : '');
+        return v.toFixed(2).replace('.', ',') + ' €';
+      }
       var h = '<table><tr><th>Module</th><th>Code</th><th>Assistant du cours</th>' +
               '<th>Questions ce mois-ci</th><th>Coût ce mois-ci</th></tr>';
       m.forEach(function (x) {
-        n += x.questions_mois || 0; cout += Number(x.cout_mois_usd || 0); if (x.assistant) ouverts++;
+        n += x.questions_mois || 0; cout += Number(x.cout_mois_eur || 0); if (x.assistant) ouverts++;
         h += '<tr><td>' + echappe(x.libelle) + '</td><td class="muted">' + echappe(x.code) + '</td>' +
              '<td><label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">' +
              '<input type="checkbox" data-assistant="' + echappe(x.code) + '"' + (x.assistant ? ' checked' : '') + '>' +
              (x.assistant ? '<span class="etat ok">ouvert</span>' : '<span class="muted">fermé</span>') + '</label></td>' +
              '<td>' + (x.questions_mois || 0) + '</td>' +
-             '<td>' + Number(x.cout_mois_usd || 0).toFixed(2).replace('.', ',') + ' $</td></tr>';
+             '<td>' + euros(x.cout_mois_eur) + '</td></tr>';
       });
       $('#resume-modules').innerHTML = '<p class="muted">' + ouverts + ' module(s) ouvert(s) · ' + n +
-        ' question(s) ce mois-ci · ' + cout.toFixed(2).replace('.', ',') + ' $ dépensés sur le plafond mensuel.</p>';
+        ' question(s) ce mois-ci · ' + euros(cout) + ' dépensé(s), pour un plafond mensuel de ' + euros(plafond) + '.</p>';
       $('#liste-modules').innerHTML = m.length ? h + '</table>' : '<p class="muted">Aucun module actif.</p>';
       Array.prototype.forEach.call(document.querySelectorAll('#liste-modules [data-assistant]'), function (c) {
         c.addEventListener('change', function () {
