@@ -125,6 +125,18 @@ tr.total td{background:var(--prune-clair);color:var(--prune-fonce);font-weight:7
 tr.questions td{background:var(--fond);color:var(--gris-moyen);font-size:.74rem;
   text-align:center;padding:.2rem .6rem}
 footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem 1rem 2rem}
+/* Contrôle d'ensemble des étapes (19/11/2026) */
+.ce-badge{display:inline-block;padding:.1rem .5rem;border-radius:999px;font-size:.76rem;font-weight:600;white-space:nowrap;margin:0 .2rem .15rem 0}
+.ce-badge.alerte{background:#FDE7E7;color:#B42318}.ce-badge.attention{background:#FFF4D6;color:#8A5A00}.ce-badge.ok{background:#E3F4E8;color:#1B7F45}
+#ce-etapes tr.clic{cursor:pointer}#ce-etapes tr.clic:hover td{background:var(--prune-clair)}
+#ce-etapes tr.choisie td{background:var(--prune-clair)}
+.ce-panneau{border:1px solid var(--trame);border-radius:8px;padding:.7rem .9rem;margin:1rem 0 0;background:var(--fond)}
+.ce-panneau h3{margin:0 0 .5rem;font-size:.95rem;color:var(--prune-fonce)}
+.ce-ligne{border-left:4px solid var(--trame);padding:.35rem .7rem;margin:.4rem 0;background:#fff;border-radius:0 6px 6px 0}
+.ce-ligne.alerte{border-left-color:#B42318}.ce-ligne.attention{border-left-color:#D99A00}.ce-ligne.ok{border-left-color:#1B7F45}.ce-ligne.info{border-left-color:var(--rose)}
+.ce-ligne b{display:block;font-size:.88rem}.ce-ligne p{margin:.15rem 0 0;font-size:.86rem}
+.ce-ligne details{margin-top:.25rem;font-size:.8rem}.ce-ligne details summary{cursor:pointer;color:var(--prune-fonce)}
+.ce-ligne details code{display:inline-block;margin:.1rem .3rem .1rem 0}
 </style>
 </head>
 <body>
@@ -448,6 +460,17 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
         <div id="resume-modules"></div>
         <div id="msg-modules"></div>
         <div id="liste-modules"></div>
+      </div>
+      <div class="carte">
+        <h2>Contrôle d'ensemble des questions</h2>
+        <p class="sub">Les défauts qui ne se voient que sur une étape entière : bonne réponse trop souvent
+          à la même position (au point de réussir sans connaître le cours), bonne réponse repérable parce
+          qu'elle est la plus longue, questions en double, et, pour les étapes évaluées, énoncés repris
+          d'un exercice ou d'un QCM du même module. Le contrôle porte sur les questions en ligne ; il ne modifie rien.</p>
+        <div style="max-width:460px;margin:.2rem 0 1rem"><label for="ce-da">Module</label>
+          <select id="ce-da"><option value="">Choisir un module…</option></select></div>
+        <div id="ce-etapes"></div>
+        <div id="ce-detail"></div>
       </div>
     </section>
 
@@ -809,7 +832,7 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
     if (nom === 'resultats') chargerResultats();
     if (nom === 'copies') chargerCopies();
     if (nom === 'personnel') chargerPersonnel();
-    if (nom === 'modules') chargerModules();
+    if (nom === 'modules') { chargerModules(); ceInit(); }
     if (nom === 'questions') chargerQuestions();
   }
 
@@ -1853,6 +1876,74 @@ footer{text-align:center;color:var(--gris-moyen);font-size:.72rem;padding:1.5rem
   /* ------------------------------------------------------------------ *
    * Modules — assistant du cours activé ou non, DA par DA (11/11/2026)
    * ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------ *
+   * Contrôle d'ensemble des questions (19/11/2026)
+   * lms.controle_da / lms.controle_etape — lecture seule, personnel.
+   * ------------------------------------------------------------------ */
+  var CE = { das: null, daId: null, etapeId: null };
+  var CE_NIVEAUX = { alerte: 'À corriger', attention: 'À examiner', ok: 'Rien à signaler', info: 'Constat' };
+  var CE_TYPES = { qcm: 'QCM', exercice: 'Exercice', cas_pratique: 'Cas pratique' };
+  function ceInit() {
+    if (CE.das) return;
+    lire('contenu', 'das?select=id,code,libelle&actif=eq.true&order=libelle').then(function (d) {
+      CE.das = d || [];
+      $('#ce-da').innerHTML = '<option value="">Choisir un module…</option>' + CE.das.map(function (x) {
+        return '<option value="' + x.id + '">' + echappe(x.libelle) + ' (' + echappe(x.code) + ')</option>';
+      }).join('');
+      $('#ce-da').addEventListener('change', function () { CE.daId = +this.value || null; CE.etapeId = null; ceEtapes(); });
+    }).catch(function (e) { alerte('#ce-etapes', e.message); });
+  }
+  function ceBadges(a, e) {
+    var h = '';
+    if (a) h += '<span class="ce-badge alerte">' + a + ' à corriger</span>';
+    if (e) h += '<span class="ce-badge attention">' + e + ' à examiner</span>';
+    return h || '<span class="ce-badge ok">OK</span>';
+  }
+  function ceEtapes() {
+    var z = $('#ce-etapes'); $('#ce-detail').innerHTML = '';
+    if (!CE.daId) { z.innerHTML = ''; return; }
+    z.innerHTML = '<p class="muted">Analyse du module en cours…</p>';
+    appeler('lms', 'controle_da', { p_da_id: CE.daId }).then(function (r) {
+      r = r || [];
+      if (!r.length) { z.innerHTML = '<p class="muted">Ce module n’a pas d’étape à questions.</p>'; return; }
+      var tA = 0, tE = 0;
+      r.forEach(function (x) { tA += x.alertes; tE += x.attentions; });
+      z.innerHTML = '<p class="muted">' + r.length + ' étape(s) à questions · ' + ceBadges(tA, tE) + ' · cliquez sur une étape pour le détail.</p>' +
+        '<table><tr><th>Étape</th><th>Type</th><th>Questions</th><th>Contrôle</th></tr>' +
+        r.map(function (x) {
+          return '<tr class="clic' + (x.etape_id === CE.etapeId ? ' choisie' : '') + '" data-etape="' + x.etape_id + '"><td><b>' + echappe(x.titre) + '</b><br><span class="muted">' + echappe(x.etape_ref) + '</span></td>' +
+            '<td>' + echappe(CE_TYPES[x.type] || x.type) + '</td><td>' + x.nb_questions + '</td><td>' + ceBadges(x.alertes, x.attentions) + '</td></tr>';
+        }).join('') + '</table>';
+      Array.prototype.forEach.call(z.querySelectorAll('tr[data-etape]'), function (tr) {
+        tr.addEventListener('click', function () {
+          Array.prototype.forEach.call(z.querySelectorAll('tr.choisie'), function (t) { t.classList.remove('choisie'); });
+          tr.classList.add('choisie');
+          CE.etapeId = +tr.dataset.etape;
+          ceDetail(CE.etapeId, tr.querySelector('b').textContent);
+        });
+      });
+    }).catch(function (e) { z.innerHTML = ''; alerte('#ce-etapes', e.message); });
+  }
+  function ceDetail(etapeId, titre) {
+    var z = $('#ce-detail');
+    z.innerHTML = '<div class="ce-panneau"><h3>' + echappe(titre) + '</h3><p class="muted">Analyse en cours…</p></div>';
+    appeler('lms', 'controle_etape', { p_etape_id: etapeId }).then(function (r) {
+      if (CE.etapeId !== etapeId) return;
+      r = r || [];
+      var ordre = { alerte: 0, attention: 1, info: 2, ok: 3 };
+      r.sort(function (a, b) { return ordre[a.niveau] - ordre[b.niveau]; });
+      z.innerHTML = '<div class="ce-panneau"><h3>' + echappe(titre) + '</h3>' +
+        r.map(function (c) {
+          var refs = c.refs || [];
+          return '<div class="ce-ligne ' + c.niveau + '"><b>' + echappe(CE_NIVEAUX[c.niveau] || c.niveau) + ' — ' + echappe(c.titre) + '</b>' +
+            '<p>' + echappe(c.message) + '</p>' +
+            (refs.length ? '<details><summary>' + refs.length + ' question' + (refs.length > 1 ? 's' : '') + ' concernée' + (refs.length > 1 ? 's' : '') + '</summary>' +
+              refs.map(function (x) { return '<code>' + echappe(x) + '</code>'; }).join('') + '</details>' : '') + '</div>';
+        }).join('') + '</div>';
+      z.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }).catch(function (e) { z.innerHTML = ''; alerte('#ce-detail', e.message); });
+  }
+
   function chargerModules() {
     $('#msg-modules').innerHTML = '';
     return appeler('lms', 'assistant_modules', {}).then(function (d) {
